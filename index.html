@@ -337,9 +337,15 @@
       left: 0;
       width: 100%;
       height: 100%;
+      background-color: #0a0d14;
       background-size: cover;
       background-position: center;
       filter: brightness(0.3);
+      transition: opacity 0.4s ease;
+      opacity: 0.92;
+    }
+    .slide-background.lazy-bg-loaded {
+      opacity: 1;
     }
     .slide-content {
       position: relative;
@@ -409,6 +415,8 @@
     }
     .category-row {
       margin-bottom: 32px;
+      content-visibility: auto;
+      contain-intrinsic-size: 320px 280px;
     }
     .category-title {
       font-size: 1.4rem;
@@ -447,8 +455,7 @@
       width: 260px;
       aspect-ratio: 16 / 9;
       border-radius: 16px;
-      background-size: cover;
-      background-position: center;
+      background-color: #151A22;
       cursor: pointer;
       position: relative;
       overflow: hidden;
@@ -456,6 +463,19 @@
       box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45), 0 0 0 1px rgba(255, 255, 255, 0.04) inset;
       transition: transform 0.28s cubic-bezier(0.34, 1.2, 0.64, 1), box-shadow 0.28s ease, border-color 0.28s ease;
       scroll-snap-align: start;
+    }
+    .game-card-bg {
+      position: absolute;
+      inset: 0;
+      background-size: cover;
+      background-position: center;
+      z-index: 0;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.35s ease;
+    }
+    .game-card-bg.lazy-bg-loaded {
+      opacity: 1;
     }
     .game-card:hover {
       transform: translateY(-6px) scale(1.035);
@@ -468,6 +488,7 @@
       left: 0;
       width: 100%;
       height: 100%;
+      z-index: 1;
       background: linear-gradient(0deg, rgba(0, 0, 0, 0.85) 0%, rgba(0, 0, 0, 0.5) 100%);
       display: flex;
       flex-direction: column;
@@ -562,6 +583,8 @@
       gap: 20px;
     }
     .full-game-item {
+      content-visibility: auto;
+      contain-intrinsic-size: 200px 240px;
       background: #151A22;
       border-radius: 16px;
       overflow: hidden;
@@ -574,10 +597,22 @@
       border-color: var(--neon-green);
     }
     .full-game-banner {
+      position: relative;
       width: 100%;
       aspect-ratio: 16 / 9;
+      background: #0d1118;
+      overflow: hidden;
+    }
+    .full-game-banner-bg {
+      position: absolute;
+      inset: 0;
       background-size: cover;
       background-position: center;
+      opacity: 0;
+      transition: opacity 0.35s ease;
+    }
+    .full-game-banner-bg.lazy-bg-loaded {
+      opacity: 1;
     }
     .full-game-info {
       padding: 10px;
@@ -3761,8 +3796,14 @@
       border-color: rgba(42,255,158,0.65);
       box-shadow: 0 6px 22px rgba(42,255,158,0.28);
     }
-    .staff-section { display: none; }
-    .staff-section.active { display: block; }
+    .staff-section {
+      display: none;
+      content-visibility: hidden;
+    }
+    .staff-section.active {
+      display: block;
+      content-visibility: visible;
+    }
     .staff-card {
       background: linear-gradient(165deg, rgba(22,28,38,0.95) 0%, rgba(14,18,26,0.92) 100%);
       border: 1px solid rgba(42,255,158,0.18);
@@ -5753,6 +5794,7 @@
           img.src = icon;
           img.alt = '';
           img.title = bn;
+          img.loading = 'lazy';
           wrapEl.appendChild(img);
         }
       });
@@ -5843,6 +5885,7 @@
             const img = document.createElement('img');
             img.src = /^https?:\/\//i.test(icon) ? icon : '';
             img.alt = '';
+            img.loading = 'lazy';
             if (!img.src) {
               btn.innerHTML = '<i class="fas fa-award" aria-hidden="true" style="font-size:0.95rem;color:#000;"></i>';
             } else btn.appendChild(img);
@@ -6039,8 +6082,9 @@
       topGames.forEach((game, idx) => {
         const slide = document.createElement('div');
         slide.className = `carousel-slide ${idx===0?'active': ''}`;
+        const imgEsc = escapeHtml(game.image || '');
         slide.innerHTML = `
-          <div class="slide-background" style="background-image: url('${game.image}')"></div>
+          <div class="slide-background" data-lazy-bg="${imgEsc}"></div>
           <div class="slide-content">
             <div class="slide-info">
               <h2>${game.title}</h2>
@@ -6056,24 +6100,31 @@
       topGames.forEach((_, i)=>{ const dot=document.createElement('div'); dot.className=`carousel-dot ${i===0?'active': ''}`; dot.addEventListener('click', ()=>showSlide(i)); nav.appendChild(dot); });
       container.appendChild(nav);
       document.querySelectorAll('.slide-play-button').forEach(btn => btn.addEventListener('click', (e) => { e.preventDefault(); handleGameClick(btn.dataset.id, btn.dataset.title, btn.dataset.url); }));
+      preloadCarouselSlideBgs(0);
       startCarousel();
     }
 
     let currentSlide=0, interval;
-    function showSlide(i){ const slides=document.querySelectorAll('.carousel-slide'), dots=document.querySelectorAll('.carousel-dot'); if(i>=slides.length)i=0; if(i<0)i=slides.length-1; slides.forEach(s=>s.classList.remove('active')); dots.forEach(d=>d.classList.remove('active')); slides[i].classList.add('active'); dots[i].classList.add('active'); currentSlide=i; }
+    function showSlide(i){ const slides=document.querySelectorAll('.carousel-slide'), dots=document.querySelectorAll('.carousel-dot'); if(i>=slides.length)i=0; if(i<0)i=slides.length-1; slides.forEach(s=>s.classList.remove('active')); dots.forEach(d=>d.classList.remove('active')); slides[i].classList.add('active'); dots[i].classList.add('active'); currentSlide=i; preloadCarouselSlideBgs(i); }
     function nextSlide(){ showSlide(currentSlide+1); }
     function startCarousel(){ clearInterval(interval); interval=setInterval(nextSlide, 5000); }
 
     function createGameCard(game) {
       const card = document.createElement('div');
       card.className = 'game-card';
-      card.style.backgroundImage = `url('${game.image}')`;
       card.dataset.id = game.id;
       card.dataset.title = game.title;
       card.dataset.url = game.url;
+      const bg = document.createElement('div');
+      bg.className = 'game-card-bg';
+      if (game.image) bg.dataset.lazyBg = game.image;
       const rating = game.rating || 3;
       const starsHtml = [1, 2, 3, 4, 5].map(s => `<i class="fas fa-star star ${s <= Math.floor(rating) ? 'filled' : ''}"></i>`).join('');
-      card.innerHTML = `<div class="card-overlay"><div class="game-name">${game.title}</div><div class="card-meta"><i class="${game.multiplayer ? 'fas fa-users mode-multi' : 'fas fa-user mode-single'}"></i><div class="card-rating"><div class="stars">${starsHtml}</div><span class="rating-value">${rating.toFixed(1)}</span></div></div></div>`;
+      const overlay = document.createElement('div');
+      overlay.className = 'card-overlay';
+      overlay.innerHTML = `<div class="game-name">${game.title}</div><div class="card-meta"><i class="${game.multiplayer ? 'fas fa-users mode-multi' : 'fas fa-user mode-single'}"></i><div class="card-rating"><div class="stars">${starsHtml}</div><span class="rating-value">${rating.toFixed(1)}</span></div></div>`;
+      card.appendChild(bg);
+      card.appendChild(overlay);
       card.addEventListener('click', () => handleGameClick(game.id, game.title, game.url));
       return card;
     }
@@ -6086,6 +6137,7 @@
       row.innerHTML = `<h2 class="category-title">${title}</h2><div class="carousel-track-container"><div class="carousel-track"></div><div class="track-nav prev"><i class="fas fa-chevron-left"></i></div><div class="track-nav next"><i class="fas fa-chevron-right"></i></div></div>`;
       const track = row.querySelector('.carousel-track');
       limited.forEach(game => track.appendChild(createGameCard(game)));
+      track.querySelectorAll('.game-card-bg').forEach((bg) => observeLazyGameBg(bg, track));
       container.appendChild(row);
       const prev = row.querySelector('.prev'), next = row.querySelector('.next');
       prev.addEventListener('click', () => track.scrollBy({ left: -260, behavior: 'smooth' }));
@@ -6119,7 +6171,7 @@
         const filtered = sortedGames.filter(g => g.title.toLowerCase().includes(query));
         grid.innerHTML = filtered.map(game => `
           <div class="full-game-item" data-id="${game.id}" data-url="${game.url}" data-title="${game.title}">
-            <div class="full-game-banner" style="background-image: url('${game.image}')"></div>
+            <div class="full-game-banner"><div class="full-game-banner-bg" data-lazy-bg="${escapeHtml(game.image || '')}"></div></div>
             <div class="full-game-info">
               <div class="full-game-title">${game.title}</div>
               <div class="full-game-meta"><span><i class="fas fa-star"></i> ${game.rating||'N/A'}</span><span><i class="${game.multiplayer?'fas fa-users': 'fas fa-user'}"></i> ${game.multiplayer?'Multiplayer': 'Single Player'}</span></div>
@@ -6127,6 +6179,7 @@
           </div>
         `).join('');
         document.querySelectorAll('.full-game-item').forEach(el => { el.addEventListener('click', () => handleGameClick(el.dataset.id, el.dataset.title, el.dataset.url)); });
+        grid.querySelectorAll('.full-game-banner-bg').forEach((bg) => observeLazyGameBg(bg));
       };
       filterAndRender();
       searchInput.addEventListener('input', filterAndRender);
@@ -6292,7 +6345,7 @@
       const top5 = blooksSnap.docs.sort((a, b) => (b.data().starsGained || 0) - (a.data().starsGained || 0)).slice(0, 5);
       document.getElementById(ids.topBlooks).innerHTML = top5.length ? top5.map(d => {
         const bl = d.data();
-        return `<div class="up-blook-card"><div class="up-blook-img"><img src="${bl.imageUrl || 'https://via.placeholder.com/52'}" alt="${bl.itemName}"></div><div class="up-blook-name">${bl.itemName}</div><div class="up-blook-rarity">${bl.rarity}</div></div>`;
+        return `<div class="up-blook-card"><div class="up-blook-img"><img src="${escapeHtml(bl.imageUrl || 'https://via.placeholder.com/52')}" alt="${escapeHtml(bl.itemName)}" loading="lazy" decoding="async"></div><div class="up-blook-name">${bl.itemName}</div><div class="up-blook-rarity">${bl.rarity}</div></div>`;
       }).join('') : '<div style="color:var(--text-secondary);font-size:0.8rem;">No blooks yet</div>';
 
       const friendIds = friendsSnap.docs.map(d => d.data().friendId);
@@ -6319,6 +6372,7 @@
           const avImg = document.createElement('img');
           avImg.src = f.avatar || defaultAvatar;
           avImg.alt = f.username || '';
+          avImg.loading = 'lazy';
           av.appendChild(avImg);
           const ban = document.createElement('div');
           ban.className = `up-friend-banner${f.banner ? ' has-custom-banner' : ''}`;
@@ -6330,6 +6384,7 @@
             bg.className = 'up-friend-banner-bg';
             bg.src = f.banner;
             bg.alt = '';
+            bg.loading = 'lazy';
             ban.appendChild(bg);
           }
           const textWrap = document.createElement('div');
@@ -6387,7 +6442,7 @@
         const el = document.createElement('div');
         el.className = 'banner-picker-item';
         el.dataset.banner = url;
-        el.innerHTML = `<img src="${escapeHtml(url)}" alt="">`;
+        el.innerHTML = `<img src="${escapeHtml(url)}" alt="" loading="lazy" decoding="async">`;
         grid.appendChild(el);
       });
       const curBanner = d.banner || '';
@@ -6430,7 +6485,7 @@
             const formattedTime = timestamp.toLocaleString(); // simple local date+time
             const historyItem = document.createElement('div');
             historyItem.className = 'history-item';
-            historyItem.innerHTML = `<img src="${data.gameImage || 'https://placehold.co/60x40'}" alt="${data.gameTitle}"><div class="history-info"><div class="history-title">${data.gameTitle}</div><div class="history-time">${formattedTime}</div></div>`;
+            historyItem.innerHTML = `<img src="${escapeHtml(data.gameImage || 'https://placehold.co/60x40')}" alt="${escapeHtml(data.gameTitle || '')}" loading="lazy" decoding="async"><div class="history-info"><div class="history-title">${data.gameTitle}</div><div class="history-time">${formattedTime}</div></div>`;
             playHistoryList.appendChild(historyItem);
           });
         });
@@ -7053,6 +7108,7 @@
         const img = document.createElement('img');
         img.src = icon;
         img.alt = bd.name || '';
+        img.loading = 'lazy';
         img.style.width = '100%';
         img.style.height = '100%';
         img.style.objectFit = 'contain';
@@ -7386,7 +7442,7 @@
       const vis = document.getElementById('inv-blook-modal-visual');
       if (vis) {
         vis.innerHTML = rep.imageUrl
-          ? `<img src="${escapeHtml(rep.imageUrl)}" alt="">`
+          ? `<img src="${escapeHtml(rep.imageUrl)}" alt="" decoding="async">`
           : `<span class="inv-blook-ph" style="color:${rc};"><i class="fas fa-dragon"></i></span>`;
       }
       const nm = document.getElementById('inv-blook-modal-name');
@@ -7453,7 +7509,7 @@
       }
       if (sendCardIcon) {
         sendCardIcon.innerHTML = rep.imageUrl
-          ? `<img src="${escapeHtml(rep.imageUrl)}" alt="" style="width:100%;height:100%;object-fit:contain;border-radius:8px;">`
+          ? `<img src="${escapeHtml(rep.imageUrl)}" alt="" decoding="async" style="width:100%;height:100%;object-fit:contain;border-radius:8px;">`
           : '🎁';
       }
       if (sendCardModal) sendCardModal.style.display = 'flex';
@@ -7468,7 +7524,7 @@
       }
       if (sendCardIcon) {
         sendCardIcon.innerHTML = currentCard.image
-          ? `<img src="${escapeHtml(currentCard.image)}" alt="" style="width:100%;height:100%;object-fit:contain;border-radius:8px;">`
+          ? `<img src="${escapeHtml(currentCard.image)}" alt="" decoding="async" style="width:100%;height:100%;object-fit:contain;border-radius:8px;">`
           : '🎁';
       }
       if (sendCardModal) sendCardModal.style.display = 'flex';
@@ -7491,7 +7547,7 @@
       }
       list.innerHTML = packBuilderItems.map((item, i) => {
         const thumb = item.imageUrl
-          ? `<img src="${escapeHtml(item.imageUrl)}" alt="">`
+          ? `<img src="${escapeHtml(item.imageUrl)}" alt="" loading="lazy" decoding="async">`
           : '<span style="width:28px;height:28px;border-radius:8px;background:rgba(255,255,255,0.08);display:inline-flex;align-items:center;justify-content:center;font-size:0.65rem;color:var(--text-secondary);"><i class="fas fa-cube"></i></span>';
         const label = escapeHtml(item.name || '(unnamed)');
         return `<div class="staff-blook-chip-wrap" style="display:inline-flex;align-items:center;gap:2px;"><button type="button" class="staff-blook-chip" data-idx="${i}">${thumb}<span>${label}</span></button><button type="button" class="staff-blook-chip-del" data-idx="${i}" title="Remove">×</button></div>`;
@@ -7658,7 +7714,7 @@
         cell.innerHTML = `
           ${count > 1 ? `<span class="inv-blook-qty-badge" style="color:${rc};border-color:${rc}44;">${count}</span>` : ''}
           <div class="inv-blook-cell-inner">
-            ${rep.imageUrl ? `<img src="${escapeHtml(rep.imageUrl)}" alt="">` : `<span class="inv-blook-ph" style="color:${rc};"><i class="fas fa-dragon"></i></span>`}
+            ${rep.imageUrl ? `<img src="${escapeHtml(rep.imageUrl)}" alt="" loading="lazy" decoding="async">` : `<span class="inv-blook-ph" style="color:${rc};"><i class="fas fa-dragon"></i></span>`}
           </div>
           <div class="inv-blook-cell-name" title="${escapeHtml(rep.itemName)}">${escapeHtml(rep.itemName)}</div>
         `;
@@ -7861,7 +7917,7 @@
                 friendsData.push(friend);
                 const friendItem = document.createElement('div');
                 friendItem.className = `friend-item${selectedFriend && selectedFriend.id === friend.id ? ' active' : ''}`;
-                friendItem.innerHTML = `<div class="friend-avatar">${friend.avatar ? `<img src="${friend.avatar}" alt="${friend.username}" style="width: 100%;height: 100%;object-fit: cover;border-radius: 50%;">` : '👤'}</div><div class="friend-name">${escapeHtml(friend.username || '')}</div>`;
+                friendItem.innerHTML = `<div class="friend-avatar">${friend.avatar ? `<img src="${escapeHtml(friend.avatar)}" alt="${escapeHtml(friend.username || '')}" loading="lazy" decoding="async" style="width: 100%;height: 100%;object-fit: cover;border-radius: 50%;">` : '👤'}</div><div class="friend-name">${escapeHtml(friend.username || '')}</div>`;
                 friendItem.addEventListener('click', () => {
                   document.querySelectorAll('.friend-item').forEach(el => el.classList.remove('active'));
                   friendItem.classList.add('active');
@@ -8080,7 +8136,7 @@
           try {
             const badgesSnap = await getDocs(collection(db, 'badges'));
             const bd = badgesSnap.docs.map(d=>d.data()).find(b=>b.name===userData.badges[0]);
-            if (bd?.icon && /^https?:\/\//i.test(bd.icon)) topBadgeHtml = `<img class="chat-msg-badge" src="${escapeHtml(bd.icon)}" alt="${escapeHtml(bd.name)}" title="${escapeHtml(bd.name)}">`;
+            if (bd?.icon && /^https?:\/\//i.test(bd.icon)) topBadgeHtml = `<img class="chat-msg-badge" src="${escapeHtml(bd.icon)}" alt="${escapeHtml(bd.name)}" title="${escapeHtml(bd.name)}" loading="lazy" decoding="async">`;
           } catch(e) {}
         }
       }
@@ -8093,7 +8149,7 @@
       const safeImg = imgUrl && /^https?:\/\//i.test(imgUrl) ? escapeHtml(imgUrl) : '';
       div.innerHTML = `
         <div class="chat-msg-header">
-          <img class="chat-avatar" src="${av}" alt="${safeName}" data-user-id="${escapeHtml(msg.senderId)}" data-username="${safeName}">
+          <img class="chat-avatar" src="${av}" alt="${safeName}" loading="lazy" decoding="async" data-user-id="${escapeHtml(msg.senderId)}" data-username="${safeName}">
           <span class="message-sender clickable-username" style="${titleStyle}" data-user-id="${escapeHtml(msg.senderId)}" data-username="${safeName}">${safeName}</span>
           ${topBadgeHtml}
           <span class="message-time">${escapeHtml(timeStr)}</span>
@@ -8291,7 +8347,7 @@
         document.getElementById('friend-chat-loading')?.classList.add('hidden');
         return;
       }
-      friendChatHeader.innerHTML = `${selectedFriend.avatar ? `<img src="${selectedFriend.avatar}" alt="${selectedFriend.username}">` : '<i class="fas fa-user"></i>'} <span>${selectedFriend.username}</span>`;
+      friendChatHeader.innerHTML = `${selectedFriend.avatar ? `<img src="${escapeHtml(selectedFriend.avatar)}" alt="${escapeHtml(selectedFriend.username || '')}" loading="lazy" decoding="async">` : '<i class="fas fa-user"></i>'} <span>${escapeHtml(selectedFriend.username || '')}</span>`;
       friendChatInputArea.style.display = 'flex';
       friendChatRenderedIds = new Set();
       const fLoad = document.getElementById('friend-chat-loading');
@@ -8516,8 +8572,8 @@
           const cardElement = document.createElement('div');
           cardElement.className = 'gift-card-item';
           cardElement.innerHTML = `
-            <div class="gift-card-item-icon ${card.rarity}">${card.imageUrl ? `<img src="${card.imageUrl}" alt="${card.itemName}" style="width: 100%;height: 100%;object-fit: cover;border-radius: 10px;">` : '<i class="fas fa-gift"></i>'}</div>
-            <div class="gift-card-item-info"><div class="gift-card-item-name">${card.itemName}</div><div class="gift-card-item-rarity">${card.rarity}</div><div class="gift-card-item-value">Stars: ${card.starsGained || 0}</div></div>
+            <div class="gift-card-item-icon ${card.rarity}">${card.imageUrl ? `<img src="${escapeHtml(card.imageUrl)}" alt="${escapeHtml(card.itemName || '')}" loading="lazy" decoding="async" style="width: 100%;height: 100%;object-fit: cover;border-radius: 10px;">` : '<i class="fas fa-gift"></i>'}</div>
+            <div class="gift-card-item-info"><div class="gift-card-item-name">${escapeHtml(card.itemName || '')}</div><div class="gift-card-item-rarity">${escapeHtml(card.rarity || '')}</div><div class="gift-card-item-value">Stars: ${card.starsGained || 0}</div></div>
           `;
           cardElement.addEventListener('click', async () => {
             if (selectedUserForGift && selectedUserForGift.id) {
@@ -8562,9 +8618,9 @@
           const giftCard = document.createElement('div');
           giftCard.className = `gift-card ${gift.rarity}`;
           giftCard.innerHTML = `
-            <div class="gift-icon">${gift.imageUrl ? `<img src="${gift.imageUrl}" alt="${gift.itemName}" style="width: 100%;height: 100%;object-fit: cover;border-radius: 50%;">` : '<i class="fas fa-gift"></i>'}</div>
-            <div class="gift-name">${gift.itemName}</div>
-            <div class="gift-sender">From: ${gift.senderName}</div>
+            <div class="gift-icon">${gift.imageUrl ? `<img src="${escapeHtml(gift.imageUrl)}" alt="${escapeHtml(gift.itemName || '')}" loading="lazy" decoding="async" style="width: 100%;height: 100%;object-fit: cover;border-radius: 50%;">` : '<i class="fas fa-gift"></i>'}</div>
+            <div class="gift-name">${escapeHtml(gift.itemName || '')}</div>
+            <div class="gift-sender">From: ${escapeHtml(gift.senderName || '')}</div>
             <div class="gift-stats"><div class="gift-stat"><div class="gift-stat-value">${gift.value}</div><div class="gift-stat-label">Value</div></div><div class="gift-stat"><div class="gift-stat-value">${gift.stars}</div><div class="gift-stat-label">Stars</div></div></div>
           `;
           giftWallContainer.appendChild(giftCard);
@@ -8738,6 +8794,82 @@
       });
     }
 
+    /** Lazy-load game banner images (IntersectionObserver + carousel slide preload). */
+    let lazyGameBgObserver = null;
+    function getLazyGameBgObserver() {
+      if (lazyGameBgObserver) return lazyGameBgObserver;
+      if (typeof IntersectionObserver === 'undefined') return null;
+      lazyGameBgObserver = new IntersectionObserver((entries) => {
+        entries.forEach((entry) => {
+          if (!entry.isIntersecting) return;
+          const el = entry.target;
+          lazyGameBgObserver.unobserve(el);
+          const url = el.dataset.lazyBg;
+          if (!url) return;
+          const img = new Image();
+          img.onload = () => {
+            el.style.backgroundImage = `url(${JSON.stringify(String(url))})`;
+            el.classList.add('lazy-bg-loaded');
+          };
+          img.onerror = () => el.classList.add('lazy-bg-loaded');
+          img.src = url;
+        });
+      }, { root: null, rootMargin: '180px 0px', threshold: 0.01 });
+      return lazyGameBgObserver;
+    }
+    function observeLazyGameBg(el, rootEl) {
+      if (!el || !el.dataset.lazyBg) return;
+      const obs = getLazyGameBgObserver();
+      if (!obs) {
+        const url = el.dataset.lazyBg;
+        el.style.backgroundImage = `url(${JSON.stringify(String(url))})`;
+        el.classList.add('lazy-bg-loaded');
+        return;
+      }
+      try {
+        if (rootEl && typeof IntersectionObserver !== 'undefined') {
+          const rObs = new IntersectionObserver((entries) => {
+            entries.forEach((entry) => {
+              if (!entry.isIntersecting) return;
+              rObs.unobserve(entry.target);
+              const t = entry.target;
+              const url = t.dataset.lazyBg;
+              if (!url) return;
+              const img = new Image();
+              img.onload = () => {
+                t.style.backgroundImage = `url(${JSON.stringify(String(url))})`;
+                t.classList.add('lazy-bg-loaded');
+              };
+              img.onerror = () => t.classList.add('lazy-bg-loaded');
+              img.src = url;
+            });
+          }, { root: rootEl, rootMargin: '120px 0px', threshold: 0.01 });
+          rObs.observe(el);
+          return;
+        }
+      } catch (_) { /* fall through */ }
+      obs.observe(el);
+    }
+    function preloadCarouselSlideBgs(index) {
+      const slides = document.querySelectorAll('.carousel-slide');
+      if (!slides.length) return;
+      const n = slides.length;
+      const want = new Set([index, (index + 1) % n, (index - 1 + n) % n]);
+      want.forEach((i) => {
+        const bg = slides[i]?.querySelector('.slide-background');
+        if (!bg || !bg.dataset.lazyBg || bg.dataset.bgReady === '1') return;
+        const url = bg.dataset.lazyBg;
+        const img = new Image();
+        img.onload = () => {
+          bg.style.backgroundImage = `url(${JSON.stringify(String(url))})`;
+          bg.classList.add('lazy-bg-loaded');
+          bg.dataset.bgReady = '1';
+        };
+        img.onerror = () => { bg.dataset.bgReady = '1'; };
+        img.src = url;
+      });
+    }
+
     function escapeHtml(str) { if(!str) return ''; return String(str).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
 
     function parseRgbaColorStop(str) {
@@ -8805,7 +8937,7 @@
       wrap.style.setProperty('--pack-inner', ci);
       wrap.style.setProperty('--pack-outer', co);
       const art = artUrl
-        ? `<img class="market-pack-art" src="${escapeHtml(artUrl)}" alt="">`
+        ? `<img class="market-pack-art" src="${escapeHtml(artUrl)}" alt="" loading="lazy" decoding="async">`
         : '<div class="market-pack-art-placeholder"><i class="fas fa-image"></i></div>';
       const infoBtn = onInfoClick
         ? '<button type="button" class="market-pack-info" title="Drop rates">?</button>'
@@ -8981,7 +9113,7 @@
       const packs = all.filter(p => p.shopType !== 'banner');
       document.getElementById('staff-banner-shop-list').innerHTML = banners.length ? banners.map(p=>{
         const img = p.bannerImageUrl || p.backgroundImage || '';
-        return `<div class="staff-card" style="margin-bottom:10px;display:flex;align-items:center;gap:12px;"><div style="width:120px;height:44px;border-radius:8px;overflow:hidden;background:#1a2a3a;flex-shrink:0;">${img?`<img src="${escapeHtml(img)}" style="width:100%;height:100%;object-fit:cover;">`:''}</div><div style="flex:1;"><strong>${escapeHtml(p.name)}</strong> — ${p.price} coins</div><div><button class="staff-btn staff-btn-primary staff-btn-sm sbn-edit" data-id="${p.id}">Edit</button> <button class="staff-btn staff-btn-danger staff-btn-sm sbn-del" data-id="${p.id}">Del</button></div></div>`;
+        return `<div class="staff-card" style="margin-bottom:10px;display:flex;align-items:center;gap:12px;"><div style="width:120px;height:44px;border-radius:8px;overflow:hidden;background:#1a2a3a;flex-shrink:0;">${img?`<img src="${escapeHtml(img)}" loading="lazy" decoding="async" style="width:100%;height:100%;object-fit:cover;">`:''}</div><div style="flex:1;"><strong>${escapeHtml(p.name)}</strong> — ${p.price} coins</div><div><button class="staff-btn staff-btn-primary staff-btn-sm sbn-edit" data-id="${p.id}">Edit</button> <button class="staff-btn staff-btn-danger staff-btn-sm sbn-del" data-id="${p.id}">Del</button></div></div>`;
       }).join('') : '<p style="color:var(--text-secondary);font-size:0.85rem;">No shop banners.</p>';
       document.querySelectorAll('.sbn-edit').forEach(b=>b.addEventListener('click',()=>openStaffBannerShopModal(b.dataset.id)));
       document.querySelectorAll('.sbn-del').forEach(b=>b.addEventListener('click',async()=>{if(confirm('Delete banner from shop?')){await deleteDoc(doc(db,'packs',b.dataset.id));loadStaffPacks();loadStaffDashboard();}}));
@@ -9100,7 +9232,7 @@
       const userBadges = data.badges || [];
       const badgesSnap = await getDocs(collection(db,'badges'));
       const allBadges = badgesSnap.docs.map(d=>({id:d.id,...d.data()}));
-      document.getElementById('staff-user-badges-list').innerHTML = userBadges.length ? userBadges.map(bn=>{const bd=allBadges.find(b=>b.name===bn);return `<span class="user-badge" style="background:${bd?bd.bgColor:'#333'};color:${bd?bd.textColor:'#fff'};">${bd&&bd.icon?`<img src="${bd.icon}" style="width:14px;height:14px;object-fit:contain;vertical-align:middle;">`:''} ${escapeHtml(bn)} <i class="fas fa-times sub-rm-badge" data-badge="${escapeHtml(bn)}" style="cursor:pointer;margin-left:4px;"></i></span>`;}).join(' ') : '<span style="color:var(--text-secondary);font-size:0.8rem;">No badges</span>';
+      document.getElementById('staff-user-badges-list').innerHTML = userBadges.length ? userBadges.map(bn=>{const bd=allBadges.find(b=>b.name===bn);return `<span class="user-badge" style="background:${bd?bd.bgColor:'#333'};color:${bd?bd.textColor:'#fff'};">${bd&&bd.icon?`<img src="${escapeHtml(bd.icon)}" loading="lazy" decoding="async" style="width:14px;height:14px;object-fit:contain;vertical-align:middle;">`:''} ${escapeHtml(bn)} <i class="fas fa-times sub-rm-badge" data-badge="${escapeHtml(bn)}" style="cursor:pointer;margin-left:4px;"></i></span>`;}).join(' ') : '<span style="color:var(--text-secondary);font-size:0.8rem;">No badges</span>';
       const addBadgeSelect = document.getElementById('staff-user-add-badge');
       addBadgeSelect.innerHTML = '<option value="">Select badge...</option>' + allBadges.filter(b=>!userBadges.includes(b.name)).map(b=>`<option value="${escapeHtml(b.name)}">${escapeHtml(b.name)}</option>`).join('');
       if(hasPermission('manage_inventory')) {
@@ -9166,7 +9298,7 @@
       if (!hasPermission('manage_badges')) { document.getElementById('staff-badges-list').innerHTML = '<p style="color:var(--neon-pink);">No permission.</p>'; return; }
       const snap = await getDocs(collection(db,'badges'));
       const badges = snap.docs.map(d=>({id:d.id,...d.data()}));
-      document.getElementById('staff-badges-list').innerHTML = badges.map(b=>`<div class="staff-card" style="margin-bottom:12px;display:flex;align-items:center;justify-content:space-between;"><div style="display:flex;align-items:center;gap:12px;"><span class="user-badge" style="background:${b.bgColor};color:${b.textColor};font-size:0.85rem;padding:6px 14px;">${b.icon?`<img src="${b.icon}" style="width:18px;height:18px;object-fit:contain;vertical-align:middle;">`:''} ${escapeHtml(b.name)}</span><span style="font-size:0.8rem;color:var(--text-secondary);">${escapeHtml(b.description||'')}</span></div><div><button class="staff-btn staff-btn-primary staff-btn-sm sb-edit" data-id="${b.id}">Edit</button> <button class="staff-btn staff-btn-danger staff-btn-sm sb-del" data-id="${b.id}">Del</button></div></div>`).join('')||'<p style="color:var(--text-secondary);">No badges created yet.</p>';
+      document.getElementById('staff-badges-list').innerHTML = badges.map(b=>`<div class="staff-card" style="margin-bottom:12px;display:flex;align-items:center;justify-content:space-between;"><div style="display:flex;align-items:center;gap:12px;"><span class="user-badge" style="background:${b.bgColor};color:${b.textColor};font-size:0.85rem;padding:6px 14px;">${b.icon?`<img src="${escapeHtml(b.icon)}" loading="lazy" decoding="async" style="width:18px;height:18px;object-fit:contain;vertical-align:middle;">`:''} ${escapeHtml(b.name)}</span><span style="font-size:0.8rem;color:var(--text-secondary);">${escapeHtml(b.description||'')}</span></div><div><button class="staff-btn staff-btn-primary staff-btn-sm sb-edit" data-id="${b.id}">Edit</button> <button class="staff-btn staff-btn-danger staff-btn-sm sb-del" data-id="${b.id}">Del</button></div></div>`).join('')||'<p style="color:var(--text-secondary);">No badges created yet.</p>';
       document.querySelectorAll('.sb-edit').forEach(b=>b.addEventListener('click',()=>openStaffEditBadge(b.dataset.id)));
       document.querySelectorAll('.sb-del').forEach(b=>b.addEventListener('click',async()=>{if(confirm('Delete badge?')){await deleteDoc(doc(db,'badges',b.dataset.id));loadStaffBadges();}}));
     }
