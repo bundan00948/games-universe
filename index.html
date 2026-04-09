@@ -2685,6 +2685,20 @@
       line-height: 1.15;
       margin-bottom: 6px;
     }
+    .pack-reveal-name.pack-reveal-title-gradient,
+    .pack-reveal-rarity.pack-reveal-rarity-gradient {
+      display: inline-block;
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      color: transparent;
+      text-shadow: none;
+      filter: drop-shadow(0 2px 10px rgba(0,0,0,0.55));
+    }
+    .pack-reveal-rarity.pack-reveal-rarity-gradient {
+      border-color: rgba(255,255,255,0.35) !important;
+      background: rgba(0,0,0,0.25) !important;
+    }
     .pack-reveal-card.pack-unbox-reveal-anim .pack-reveal-name {
       animation: packRevealNamePop 0.85s cubic-bezier(0.34, 1.25, 0.64, 1) 0.12s both;
     }
@@ -5679,15 +5693,8 @@
     const DEFAULT_RARITY_ORDER = ['common','uncommon','rare','epic','legendary','mythical','chroma'];
     let effectiveRarityOrder = [...DEFAULT_RARITY_ORDER];
     let blookRarityDefs = {};
-    const DEFAULT_RARITY_DEFS = {
-      common: { solid: '#c0c0c0', isGradient: false, gradientColors: [], isRunning: false },
-      uncommon: { solid: '#2e7d32', isGradient: false, gradientColors: [], isRunning: false },
-      rare: { solid: '#1565c0', isGradient: false, gradientColors: [], isRunning: false },
-      epic: { solid: '#6a1b9a', isGradient: false, gradientColors: [], isRunning: false },
-      legendary: { solid: '#bf8f00', isGradient: false, gradientColors: [], isRunning: false },
-      mythical: { solid: '#c62828', isGradient: false, gradientColors: [], isRunning: false },
-      chroma: { solid: '#00bcd4', isGradient: false, gradientColors: [], isRunning: false }
-    };
+    /** Unknown rarities only — all real styles come from admin `blookRarityDefs`. */
+    const FALLBACK_RARITY_DEF = { solid: '#a8b0c8', isGradient: false, gradientColors: [], isRunning: false };
     function raritySortIndex(r) {
       const x = (r || 'common').toLowerCase();
       const i = effectiveRarityOrder.indexOf(x);
@@ -5705,13 +5712,12 @@
             if (arr.length) effectiveRarityOrder = arr;
           }
           const rd = d.blookRarityDefs;
-          if (rd && typeof rd === 'object') blookRarityDefs = { ...DEFAULT_RARITY_DEFS, ...rd };
-          else blookRarityDefs = { ...DEFAULT_RARITY_DEFS };
+          blookRarityDefs = rd && typeof rd === 'object' ? { ...rd } : {};
         } else {
-          blookRarityDefs = { ...DEFAULT_RARITY_DEFS };
+          blookRarityDefs = {};
         }
       } catch (e) {
-        blookRarityDefs = { ...DEFAULT_RARITY_DEFS };
+        blookRarityDefs = {};
       }
     }
 
@@ -6975,13 +6981,27 @@
     }
 
     function getRarityDef(r) {
-      const key = (r || 'common').toLowerCase();
-      return blookRarityDefs[key] || DEFAULT_RARITY_DEFS[key] || { solid: '#ffffff', isGradient: false, gradientColors: [], isRunning: false };
+      const key = (r || '').toLowerCase().trim() || 'unknown';
+      const raw = blookRarityDefs[key];
+      return raw ? normalizeStaffRarityDef(raw) : FALLBACK_RARITY_DEF;
     }
+
+    function firstRgbFromRarityDef(d) {
+      if (d.isGradient && d.gradientColors && d.gradientColors.length) {
+        for (const c of d.gradientColors) {
+          const t = hexToRgbTriplet(c);
+          if (t) return t;
+        }
+      }
+      return hexToRgbTriplet(d.solid) || [168, 176, 200];
+    }
+
     function getRarityColor(rarity) {
       const d = getRarityDef(rarity);
-      return d.solid || '#ffffff';
+      if (!d.isGradient) return d.solid || '#a8b0c8';
+      return rgbToHex(firstRgbFromRarityDef(d));
     }
+
     function getRarityColorCss(rarity) {
       const d = getRarityDef(rarity);
       if (d.isGradient && d.gradientColors && d.gradientColors.length >= 2) {
@@ -6992,14 +7012,58 @@
         }
         return `${base}; -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; color: transparent`;
       }
-      return d.solid || '#ffffff';
+      return d.solid || '#a8b0c8';
     }
 
-    /** Full-area modal background from rarity — vivid colors, softer darks (not near-black). */
+    /** Pack reveal title / rarity label — uses admin gradient on text when configured. */
+    function applyPackRevealRarityTextStyles(rarity) {
+      const d = getRarityDef(rarity);
+      const nameEl = document.getElementById('opened-gift-name');
+      const rareEl = document.getElementById('opened-gift-rarity');
+      if (nameEl) {
+        nameEl.classList.remove('pack-reveal-title-gradient');
+        if (d.isGradient && d.gradientColors && d.gradientColors.length >= 2) {
+          nameEl.classList.add('pack-reveal-title-gradient');
+          const g = d.gradientColors.join(', ');
+          nameEl.style.color = 'transparent';
+          nameEl.style.webkitTextFillColor = 'transparent';
+          nameEl.style.backgroundImage = `linear-gradient(135deg, ${g})`;
+          nameEl.style.backgroundSize = d.isRunning ? '200% 200%' : '100% 100%';
+          nameEl.style.backgroundRepeat = 'no-repeat';
+          nameEl.style.animation = d.isRunning ? 'runGradient 3s linear infinite' : '';
+        } else {
+          nameEl.style.backgroundImage = '';
+          nameEl.style.backgroundSize = '';
+          nameEl.style.animation = '';
+          nameEl.style.webkitTextFillColor = '';
+          nameEl.style.color = d.solid || '#fff';
+        }
+      }
+      if (rareEl) {
+        rareEl.classList.remove('pack-reveal-rarity-gradient');
+        if (d.isGradient && d.gradientColors && d.gradientColors.length >= 2) {
+          rareEl.classList.add('pack-reveal-rarity-gradient');
+          const g = d.gradientColors.join(', ');
+          rareEl.style.color = 'transparent';
+          rareEl.style.webkitTextFillColor = 'transparent';
+          rareEl.style.backgroundImage = `linear-gradient(135deg, ${g})`;
+          rareEl.style.backgroundSize = d.isRunning ? '200% 200%' : '100% 100%';
+          rareEl.style.backgroundRepeat = 'no-repeat';
+          rareEl.style.animation = d.isRunning ? 'runGradient 3s linear infinite' : '';
+        } else {
+          rareEl.style.backgroundImage = '';
+          rareEl.style.backgroundSize = '';
+          rareEl.style.animation = '';
+          rareEl.style.webkitTextFillColor = '';
+          rareEl.style.color = d.solid || '#fff';
+        }
+      }
+    }
+
+    /** Full-area modal / card background — admin gradient uses every stop (no trimming to black). */
     function getRarityBackgroundGradientCss(rarity) {
       const d = getRarityDef(rarity);
-      const baseHex = getRarityColor(rarity);
-      const rgb = hexToRgbTriplet(baseHex) || [100, 120, 150];
+      const rgb = firstRgbFromRarityDef(d);
       const lit = mixRgb(rgb, [255, 255, 255], 0.38);
       const mid = mixRgb(rgb, [120, 135, 165], 0.42);
       const deep = mixRgb(rgb, [38, 46, 62], 0.5);
@@ -7007,8 +7071,8 @@
       if (d.isGradient && d.gradientColors && d.gradientColors.length >= 2) {
         const g = d.gradientColors.join(', ');
         return {
-          image: `linear-gradient(155deg, ${g} 0%, ${toRgb(lit)} 40%, ${toRgb(mid)} 72%, ${toRgb(deep)} 100%)`,
-          size: d.isRunning ? '220% 220%' : '100% 100%',
+          image: `linear-gradient(160deg, ${g})`,
+          size: d.isRunning ? '240% 240%' : '100% 100%',
           repeat: 'no-repeat',
           position: d.isRunning ? '0% 50%' : 'center',
           animated: !!d.isRunning
@@ -7132,9 +7196,9 @@
     function startPackConfetti(durationMs, colorPalette, rarityForGrad) {
       stopPackConfetti();
       if (packConfettiLayer) packConfettiLayer.style.display = 'block';
-      spawnPackConfettiBurst(22, colorPalette, rarityForGrad);
-      packConfettiInterval = setInterval(() => spawnPackConfettiBurst(12, colorPalette, rarityForGrad), 520);
-      packConfettiStopTimer = setTimeout(() => stopPackConfetti(), durationMs || 9000);
+      spawnPackConfettiBurst(38, colorPalette, rarityForGrad);
+      packConfettiInterval = setInterval(() => spawnPackConfettiBurst(22, colorPalette, rarityForGrad), 400);
+      packConfettiStopTimer = setTimeout(() => stopPackConfetti(), durationMs || 13000);
     }
 
     function ymdUTC(d) {
@@ -7162,7 +7226,7 @@
     function renderStaffRarityDefsList() {
       const list = document.getElementById('staff-rarity-defs-list');
       if (!list) return;
-      const keysSet = new Set([...Object.keys(DEFAULT_RARITY_DEFS), ...Object.keys(blookRarityDefs || {})]);
+      const keysSet = new Set(Object.keys(blookRarityDefs || {}));
       const keys = Array.from(keysSet);
       keys.sort((a, b) => {
         const ia = raritySortIndex(a);
@@ -7187,7 +7251,7 @@
 
     async function deleteStaffRarityDef(key) {
       const k = (key || '').toLowerCase().trim();
-      if (!k || !confirm(`Remove custom style for "${k}"? Built-in default will be used.`)) return;
+      if (!k || !confirm(`Remove style for "${k}"? Items using this rarity will use the neutral fallback until you add it again.`)) return;
       try {
         await updateDoc(doc(db, 'siteConfig', 'settings'), {
           [`blookRarityDefs.${k}`]: deleteField(),
@@ -7579,10 +7643,10 @@
       packOpeningModalBody?.classList.add('pack-unbox-body', 'pack-unbox-body-lively');
 
       openedGiftName.textContent = item.name || '';
-      const rKey = (item.rarity || 'common').toLowerCase();
-      openedGiftRarity.textContent = (item.rarity || 'common').toUpperCase();
+      const rKey = (item.rarity || '').trim().toLowerCase() || 'unknown';
+      openedGiftRarity.textContent = (item.rarity || '?').toUpperCase();
       openedGiftRarity.className = 'pack-reveal-rarity';
-      openedGiftRarity.style.cssText = `color:${getRarityColor(rKey)};background:none;-webkit-text-fill-color:initial;`;
+      applyPackRevealRarityTextStyles(item.rarity);
       const pct = item.chance != null && item.chance !== '' ? Number(item.chance) : null;
       openedGiftChance.textContent = pct != null && Number.isFinite(pct) ? `${pct}%` : '—';
       openedGiftStars.textContent = `Stars: ${item.starsGained != null ? item.starsGained : 0}`;
@@ -7593,9 +7657,12 @@
           packRevealCard.style.backgroundImage = `url(${JSON.stringify(revealUrl)})`;
           packRevealCard.style.backgroundSize = 'cover';
         } else {
+          const rbg = getRarityBackgroundGradientCss(item.rarity);
           packRevealCard.style.backgroundColor = '#0b0e14';
-          packRevealCard.style.backgroundSize = '100% 100%';
-          packRevealCard.style.backgroundImage = `linear-gradient(155deg, ${inner} 0%, ${outer} 55%, #05070c 100%)`;
+          packRevealCard.style.backgroundImage = rbg.image;
+          packRevealCard.style.backgroundSize = rbg.size;
+          packRevealCard.style.backgroundRepeat = rbg.repeat;
+          packRevealCard.style.backgroundPosition = rbg.position;
         }
       }
       if (packRevealBlookSlot) {
@@ -7729,15 +7796,19 @@
         packOpeningModalInner?.classList.remove('pack-unbox-peek-mood');
       };
 
+      let packUnboxStarted = false;
+
       const firstRip = () => {
         if (giftAnimation.classList.contains('torn')) return;
         giftAnimation.classList.add('torn', 'pack-unbox-peek');
         packOpeningModalInner?.classList.add('pack-unbox-peek-mood');
         if (packRipOverlay) {
-          packRipOverlay.classList.remove('pack-bg-rip-flash');
-          void packRipOverlay.offsetWidth;
-          packRipOverlay.classList.add('pack-bg-rip-flash');
-          setTimeout(() => { packRipOverlay?.classList.remove('pack-bg-rip-flash'); }, 700);
+          requestAnimationFrame(() => {
+            packRipOverlay.classList.remove('pack-bg-rip-flash');
+            void packRipOverlay.offsetWidth;
+            packRipOverlay.classList.add('pack-bg-rip-flash');
+            setTimeout(() => { packRipOverlay?.classList.remove('pack-bg-rip-flash'); }, 700);
+          });
         }
         if (packUnboxBoost) packUnboxBoost.style.display = 'none';
       };
@@ -7748,34 +7819,39 @@
         giftAnimation.classList.remove('pack-unbox-peek');
         applyRarityCelebrateBg();
         const confettiColors = getRarityConfettiColors(item.rarity);
-        startPackConfetti(9000, confettiColors, item.rarity);
+        startPackConfetti(13000, confettiColors, item.rarity);
         setTimeout(finishRevealCard, 620);
       };
 
       packUnboxClickHandler = (e) => {
         e.preventDefault();
         e.stopPropagation();
-        if (!giftAnimation.classList.contains('torn')) {
-          firstRip();
-          const preConfettiMs = 1000;
-          if (packAutoUnboxTimer) clearTimeout(packAutoUnboxTimer);
-          packAutoUnboxTimer = setTimeout(() => {
-            packAutoUnboxTimer = null;
-            secondReveal();
-          }, preConfettiMs);
-        }
+        if (giftAnimation.classList.contains('torn')) return;
+        if (packUnboxStarted) return;
+        packUnboxStarted = true;
+        firstRip();
+        const preConfettiMs = 1000;
+        if (packAutoUnboxTimer) clearTimeout(packAutoUnboxTimer);
+        packAutoUnboxTimer = setTimeout(() => {
+          packAutoUnboxTimer = null;
+          secondReveal();
+        }, preConfettiMs);
       };
 
       const probe = new Image();
       probe.onload = () => {
         setStackSize(probe.naturalWidth, probe.naturalHeight);
         giftAnimation.appendChild(stack);
-        if (packUnboxClickLayer) packUnboxClickLayer.addEventListener('click', packUnboxClickHandler);
+        if (packUnboxClickLayer) {
+          packUnboxClickLayer.addEventListener('click', packUnboxClickHandler, { once: true });
+        }
       };
       probe.onerror = () => {
         setStackSize(280, 280);
         giftAnimation.appendChild(stack);
-        if (packUnboxClickLayer) packUnboxClickLayer.addEventListener('click', packUnboxClickHandler);
+        if (packUnboxClickLayer) {
+          packUnboxClickLayer.addEventListener('click', packUnboxClickHandler, { once: true });
+        }
       };
       probe.src = artUrl;
 
