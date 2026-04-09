@@ -1712,8 +1712,8 @@
       pointer-events: none;
       z-index: 0;
     }
-    .inv-blook-detail.inv-blook-detail--raw-bg::before {
-      background: rgba(0, 0, 0, 0.38);
+    .inv-blook-detail.inv-blook-detail--opening-bg::before {
+      background: rgba(0, 0, 0, 0.42);
     }
     .inv-blook-detail > * {
       position: relative;
@@ -7464,15 +7464,27 @@
       root.style.setProperty('--pack-aurora-rare-c', toR(rr, 0.14));
     }
 
-    function applyPackOpeningModalBackdrop(innerHex, outerHex) {
-      if (!openingModalBg) return;
+    /** Same gradient as pack-opening modal (pre-reveal / "showing" state). */
+    function getPackOpeningBackdropStyle(innerHex, outerHex) {
       const inner = innerHex || '#5a6a8a';
       const outer = outerHex || '#1a2233';
-      openingModalBg.style.backgroundImage = `linear-gradient(168deg, ${inner} 0%, ${outer} 42%, #030509 88%)`;
-      openingModalBg.style.backgroundSize = '220% 220%';
-      openingModalBg.style.backgroundRepeat = 'no-repeat';
-      openingModalBg.style.backgroundPosition = '40% 45%';
-      openingModalBg.style.backgroundBlendMode = '';
+      return {
+        backgroundImage: `linear-gradient(168deg, ${inner} 0%, ${outer} 42%, #030509 88%)`,
+        backgroundSize: '220% 220%',
+        backgroundRepeat: 'no-repeat',
+        backgroundPosition: '40% 45%',
+        backgroundBlendMode: ''
+      };
+    }
+
+    function applyPackOpeningModalBackdrop(innerHex, outerHex) {
+      if (!openingModalBg) return;
+      const s = getPackOpeningBackdropStyle(innerHex, outerHex);
+      openingModalBg.style.backgroundImage = s.backgroundImage;
+      openingModalBg.style.backgroundSize = s.backgroundSize;
+      openingModalBg.style.backgroundRepeat = s.backgroundRepeat;
+      openingModalBg.style.backgroundPosition = s.backgroundPosition;
+      openingModalBg.style.backgroundBlendMode = s.backgroundBlendMode;
     }
 
     function showPackOpeningModal(pack, item) {
@@ -7703,9 +7715,23 @@
       return Math.max(1, Math.floor(n * 0.5));
     }
 
+    function resolvePackDocForInvDetail(rep) {
+      const cache = inventoryCatalogCache || [];
+      const pid = rep && rep.packId;
+      if (pid) {
+        const byId = cache.find(p => p.id === pid);
+        if (byId) return byId;
+      }
+      const pn = (rep && rep.packName || '').trim();
+      if (pn) {
+        return cache.find(p => (p.name || '').trim() === pn) || null;
+      }
+      return null;
+    }
+
     function applyInvPanelPackBackground(packDoc) {
       if (!invBlookDetailPanel) return;
-      invBlookDetailPanel.classList.remove('inv-blook-detail--raw-bg');
+      invBlookDetailPanel.classList.remove('inv-blook-detail--opening-bg');
       invBlookDetailPanel.style.backgroundColor = '#07090e';
       if (!packDoc) {
         invBlookDetailPanel.style.backgroundImage = 'none';
@@ -7715,32 +7741,16 @@
         invBlookDetailPanel.style.backgroundBlendMode = '';
         return;
       }
-      const rawBg = String(packDoc.backgroundImage || '').trim() || (marketPackArtUrl(packDoc) || '').trim();
-      const pat = (marketPackPatternUrl(packDoc) || '').trim();
-      if (!rawBg) {
-        invBlookDetailPanel.style.backgroundImage = 'none';
-        invBlookDetailPanel.style.backgroundSize = '';
-        invBlookDetailPanel.style.backgroundPosition = '';
-        invBlookDetailPanel.style.backgroundRepeat = '';
-        invBlookDetailPanel.style.backgroundBlendMode = '';
-        return;
-      }
-      const thumb = mediaThumbUrl(rawBg, 800, 80);
-      invBlookDetailPanel.classList.add('inv-blook-detail--raw-bg');
-      if (pat) {
-        const patThumb = mediaThumbUrl(pat, 480, 72);
-        invBlookDetailPanel.style.backgroundImage = `url(${JSON.stringify(thumb)}), url(${JSON.stringify(patThumb)})`;
-        invBlookDetailPanel.style.backgroundSize = 'cover, 240px';
-        invBlookDetailPanel.style.backgroundPosition = 'center, center';
-        invBlookDetailPanel.style.backgroundRepeat = 'no-repeat, repeat';
-        invBlookDetailPanel.style.backgroundBlendMode = 'normal, multiply';
-      } else {
-        invBlookDetailPanel.style.backgroundImage = `url(${JSON.stringify(thumb)})`;
-        invBlookDetailPanel.style.backgroundSize = 'cover';
-        invBlookDetailPanel.style.backgroundPosition = 'center';
-        invBlookDetailPanel.style.backgroundRepeat = 'no-repeat';
-        invBlookDetailPanel.style.backgroundBlendMode = '';
-      }
+      const fc = marketPackFrameColors(packDoc);
+      const inner = fc.inner || '#5a6a8a';
+      const outer = fc.outer || '#1a2233';
+      const s = getPackOpeningBackdropStyle(inner, outer);
+      invBlookDetailPanel.classList.add('inv-blook-detail--opening-bg');
+      invBlookDetailPanel.style.backgroundImage = s.backgroundImage;
+      invBlookDetailPanel.style.backgroundSize = s.backgroundSize;
+      invBlookDetailPanel.style.backgroundRepeat = s.backgroundRepeat;
+      invBlookDetailPanel.style.backgroundPosition = s.backgroundPosition;
+      invBlookDetailPanel.style.backgroundBlendMode = s.backgroundBlendMode;
     }
 
     function clearInvBlookDetailPanel() {
@@ -7789,7 +7799,7 @@
       const name = rep.itemName || catalogDef?.name || 'Blook';
       const stars = Number(rep.starsGained != null ? rep.starsGained : catalogDef?.starsGained) || 0;
       const imageUrl = String(rep.imageUrl || catalogDef?.imageUrl || '').trim();
-      const packDoc = catalogDef?.packDoc || null;
+      const packDoc = catalogDef?.packDoc || resolvePackDocForInvDetail(rep);
 
       if (invBlookDetailPlaceholder) invBlookDetailPlaceholder.style.display = 'none';
       if (invBlookDetailBody) {
