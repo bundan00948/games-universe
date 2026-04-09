@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Game Universe - All Games</title>
+  <link rel="preconnect" href="https://wsrv.nl" crossorigin>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Titan+One&display=swap" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" rel="stylesheet">
@@ -1688,9 +1689,11 @@
     .inv-blook-detail {
       border-radius: 20px;
       border: 1px solid rgba(42,255,158,0.22);
-      background: linear-gradient(168deg, #3d4a5c 0%, #1a2233 42%, #080b10 88%);
+      background-color: #07090e;
+      background-image: none;
       background-size: cover;
       background-position: center;
+      background-repeat: no-repeat;
       box-shadow: 0 16px 48px rgba(0,0,0,0.45), inset 0 0 0 1px rgba(255,255,255,0.04);
       padding: 22px 18px 20px;
       display: flex;
@@ -1705,8 +1708,12 @@
       content: '';
       position: absolute;
       inset: 0;
-      background: radial-gradient(ellipse 90% 70% at 50% 20%, rgba(255,255,255,0.06), transparent 55%);
+      background: rgba(0, 0, 0, 0.52);
       pointer-events: none;
+      z-index: 0;
+    }
+    .inv-blook-detail.inv-blook-detail--raw-bg::before {
+      background: rgba(0, 0, 0, 0.38);
     }
     .inv-blook-detail > * {
       position: relative;
@@ -2451,13 +2458,21 @@
       0%, 100% { filter: brightness(1.05) saturate(1.15); }
       50% { filter: brightness(1.15) saturate(1.35); }
     }
-    #opening-modal-bg.pack-bg-rip-flash {
-      animation: packBgRipFlash 0.65s ease-out 1 !important;
+    .pack-rip-overlay {
+      position: absolute;
+      inset: 0;
+      z-index: 2;
+      pointer-events: none;
+      background: transparent;
+      mix-blend-mode: screen;
     }
-    @keyframes packBgRipFlash {
-      0% { filter: brightness(1) saturate(1); }
-      40% { filter: brightness(1.45) saturate(1.45) contrast(1.06); }
-      100% { filter: brightness(1) saturate(1); }
+    .pack-rip-overlay.pack-bg-rip-flash {
+      animation: packRipOverlayFlash 0.65s ease-out 1;
+    }
+    @keyframes packRipOverlayFlash {
+      0% { opacity: 0; }
+      35% { opacity: 1; background: radial-gradient(ellipse 85% 65% at 50% 45%, rgba(255,255,255,0.22), transparent 62%); }
+      100% { opacity: 0; background: transparent; }
     }
     @keyframes packBgCelebratePulse {
       0%, 100% { filter: brightness(0.94) saturate(1.06); }
@@ -5371,6 +5386,7 @@
     <div class="modal" id="pack-opening-modal">
       <div class="modal-content pack-opening-modal" id="pack-opening-modal-inner">
         <div class="modal-background" id="opening-modal-bg"></div>
+        <div class="pack-rip-overlay" id="pack-rip-overlay" aria-hidden="true"></div>
         <div class="pack-bg-fx" id="pack-bg-fx" aria-hidden="true">
           <div class="pack-bg-aurora"></div>
           <div class="pack-bg-mesh"></div>
@@ -5811,6 +5827,7 @@
     const packConfettiLayer = document.getElementById('pack-confetti-layer');
     const packUnboxBoost = document.getElementById('pack-unbox-boost');
     const openingModalBg = document.getElementById('opening-modal-bg');
+    const packRipOverlay = document.getElementById('pack-rip-overlay');
     const giftAnimation = document.getElementById('gift-animation');
     const openedGiftName = document.getElementById('opened-gift-name');
     const openedGiftRarity = document.getElementById('opened-gift-rarity');
@@ -5879,6 +5896,19 @@
     let selectedUserForGift = null;
     let selectedGiftForSend = null;
     let friendsData = [];
+
+    /** Resize/compress remote images via wsrv.nl (smaller downloads for game art, blooks, pack UI). */
+    function mediaThumbUrl(url, maxEdge, quality) {
+      const u = String(url || '').trim();
+      if (!u || !/^https?:\/\//i.test(u)) return u;
+      const q = Math.min(100, Math.max(40, Number(quality) || 80));
+      const w = Math.min(1600, Math.max(64, Math.round(Number(maxEdge) || 480)));
+      try {
+        return `https://wsrv.nl/?url=${encodeURIComponent(u)}&w=${w}&output=webp&q=${q}`;
+      } catch (_) {
+        return u;
+      }
+    }
 
     // ========== Helper: show notification ==========
     function showNotification(message, type) {
@@ -6291,7 +6321,12 @@
         const gamesSnapshot = await getDocs(collection(db, "games"));
         const games = gamesSnapshot.docs.map(d => ({ id: d.id, ...d.data() }));
         const playCounts = {};
-        const playsSnapshot = await getDocs(collection(db, "plays"));
+        let playsSnapshot;
+        try {
+          playsSnapshot = await getDocs(query(collection(db, "plays"), orderBy("timestamp", "desc"), limit(500)));
+        } catch (_) {
+          playsSnapshot = await getDocs(collection(db, "plays"));
+        }
         playsSnapshot.forEach(d => playCounts[d.data().gameId] = (playCounts[d.data().gameId] || 0) + 1);
         games.sort((a, b) => (playCounts[b.id]||0) - (playCounts[a.id]||0));
         const topGames = games.slice(0, 5).map((g, i)=>({...g, rank: i+1}));
@@ -7361,8 +7396,11 @@
         ['--pack-inner', '--pack-outer', '--pack-aurora-inner', '--pack-aurora-outer', '--pack-aurora-rare-a', '--pack-aurora-rare-b', '--pack-aurora-rare-c'].forEach(p => packOpeningModalInner.style.removeProperty(p));
       }
       if (openingModalBg) {
-        openingModalBg.classList.remove('pack-rarity-celebrate', 'pack-bg-rarity-animated', 'pack-bg-rip-flash');
+        openingModalBg.classList.remove('pack-rarity-celebrate', 'pack-bg-rarity-animated');
         openingModalBg.style.animation = '';
+      }
+      if (packRipOverlay) {
+        packRipOverlay.classList.remove('pack-bg-rip-flash');
       }
       if (packUnboxClickLayer && packUnboxClickHandler) {
         packUnboxClickLayer.removeEventListener('click', packUnboxClickHandler);
@@ -7409,6 +7447,27 @@
       root.style.setProperty('--pack-aurora-rare-c', toR(rr, 0.14));
     }
 
+    function applyPackImageAsModalBackground(pack, fallbackInner, fallbackOuter) {
+      if (!openingModalBg) return;
+      const art = (marketPackArtUrl(pack) || (pack.backgroundImage || '').trim() || '').replace(/\\/g, '/');
+      const inner = fallbackInner || '#5a6a8a';
+      const outer = fallbackOuter || '#1a2233';
+      if (art) {
+        const thumb = mediaThumbUrl(art, 960, 75);
+        openingModalBg.style.backgroundImage = `linear-gradient(168deg, ${inner} 0%, ${outer} 42%, #030509 88%), url(${JSON.stringify(thumb)})`;
+        openingModalBg.style.backgroundSize = '220% 220%, cover';
+        openingModalBg.style.backgroundRepeat = 'no-repeat, no-repeat';
+        openingModalBg.style.backgroundPosition = '40% 45%, center';
+        openingModalBg.style.backgroundBlendMode = 'normal, multiply';
+      } else {
+        openingModalBg.style.backgroundImage = `linear-gradient(168deg, ${inner} 0%, ${outer} 42%, #030509 88%)`;
+        openingModalBg.style.backgroundSize = '220% 220%';
+        openingModalBg.style.backgroundRepeat = 'no-repeat';
+        openingModalBg.style.backgroundPosition = '40% 45%';
+        openingModalBg.style.backgroundBlendMode = '';
+      }
+    }
+
     function showPackOpeningModal(pack, item) {
       resetPackOpeningModalLayout();
 
@@ -7416,10 +7475,7 @@
       const inner = fc.inner || '#5a6a8a';
       const outer = fc.outer || '#1a2233';
       applyPackUnboxBackdropVars(inner, outer, item.rarity);
-      openingModalBg.style.backgroundImage = `linear-gradient(168deg, ${inner} 0%, ${outer} 42%, #030509 88%)`;
-      openingModalBg.style.backgroundSize = '220% 220%';
-      openingModalBg.style.backgroundRepeat = 'no-repeat';
-      openingModalBg.style.backgroundPosition = '40% 45%';
+      applyPackImageAsModalBackground(pack, inner, outer);
 
       packOpeningModalInner?.classList.add('pack-opening-modal-unbox');
       packOpeningModalBody?.classList.add('pack-unbox-body');
@@ -7466,7 +7522,8 @@
       giftAnimation.innerHTML = '';
       giftAnimation.classList.add('pack-unbox-stage');
 
-      const artUrl = (marketPackArtUrl(pack) || (pack.backgroundImage || '').trim() || (pack.items?.find(it => it.imageUrl)?.imageUrl) || 'https://placehold.co/280x280/1a1f2e/8899aa?text=Pack').replace(/\\/g, '/');
+      const rawArt = (marketPackArtUrl(pack) || (pack.backgroundImage || '').trim() || (pack.items?.find(it => it.imageUrl)?.imageUrl) || 'https://placehold.co/280x280/1a1f2e/8899aa?text=Pack').replace(/\\/g, '/');
+      const artUrl = mediaThumbUrl(rawArt, 560, 82);
 
       const stack = document.createElement('div');
       stack.className = 'pack-unbox-stack';
@@ -7568,21 +7625,27 @@
           openingModalBg.style.backgroundSize = bg.size;
           openingModalBg.style.backgroundRepeat = bg.repeat;
           openingModalBg.style.backgroundPosition = bg.position;
+          openingModalBg.style.backgroundBlendMode = '';
           openingModalBg.style.animation = '';
         }
         packOpeningModalInner?.classList.add('pack-unbox-celebrate');
         packOpeningModalInner?.classList.remove('pack-unbox-peek-mood');
+        setTimeout(() => {
+          if (packOpeningModal?.style.display !== 'flex' || !openingModalBg) return;
+          openingModalBg.classList.remove('pack-rarity-celebrate', 'pack-bg-rarity-animated');
+          applyPackImageAsModalBackground(pack, inner, outer);
+        }, 720);
       };
 
       const firstRip = () => {
         if (giftAnimation.classList.contains('torn')) return;
         giftAnimation.classList.add('torn', 'pack-unbox-peek');
         packOpeningModalInner?.classList.add('pack-unbox-peek-mood');
-        if (openingModalBg) {
-          openingModalBg.classList.remove('pack-bg-rip-flash');
-          void openingModalBg.offsetWidth;
-          openingModalBg.classList.add('pack-bg-rip-flash');
-          setTimeout(() => { openingModalBg?.classList.remove('pack-bg-rip-flash'); }, 700);
+        if (packRipOverlay) {
+          packRipOverlay.classList.remove('pack-bg-rip-flash');
+          void packRipOverlay.offsetWidth;
+          packRipOverlay.classList.add('pack-bg-rip-flash');
+          setTimeout(() => { packRipOverlay?.classList.remove('pack-bg-rip-flash'); }, 700);
         }
         if (packUnboxBoost) packUnboxBoost.style.display = 'none';
       };
@@ -7642,22 +7705,40 @@
 
     function applyInvPanelPackBackground(packDoc) {
       if (!invBlookDetailPanel) return;
-      const fc = marketPackFrameColors(packDoc);
-      const inner = fc.inner || '#5a6a8a';
-      const outer = fc.outer || '#1a2233';
-      const art = packDoc ? (marketPackArtUrl(packDoc) || '').trim() : '';
-      const baseGrad = `linear-gradient(168deg, ${inner} 0%, ${outer} 42%, #030509 88%)`;
-      if (art) {
-        invBlookDetailPanel.style.backgroundImage = `${baseGrad}, url(${JSON.stringify(art)})`;
-        invBlookDetailPanel.style.backgroundSize = '100% 100%, cover';
-        invBlookDetailPanel.style.backgroundPosition = '0 0, center';
-        invBlookDetailPanel.style.backgroundRepeat = 'no-repeat, no-repeat';
-        invBlookDetailPanel.style.backgroundBlendMode = 'normal, multiply';
-      } else {
-        invBlookDetailPanel.style.backgroundImage = baseGrad;
+      invBlookDetailPanel.classList.remove('inv-blook-detail--raw-bg');
+      invBlookDetailPanel.style.backgroundColor = '#07090e';
+      if (!packDoc) {
+        invBlookDetailPanel.style.backgroundImage = 'none';
         invBlookDetailPanel.style.backgroundSize = '';
         invBlookDetailPanel.style.backgroundPosition = '';
         invBlookDetailPanel.style.backgroundRepeat = '';
+        invBlookDetailPanel.style.backgroundBlendMode = '';
+        return;
+      }
+      const rawBg = String(packDoc.backgroundImage || '').trim() || (marketPackArtUrl(packDoc) || '').trim();
+      const pat = (marketPackPatternUrl(packDoc) || '').trim();
+      if (!rawBg) {
+        invBlookDetailPanel.style.backgroundImage = 'none';
+        invBlookDetailPanel.style.backgroundSize = '';
+        invBlookDetailPanel.style.backgroundPosition = '';
+        invBlookDetailPanel.style.backgroundRepeat = '';
+        invBlookDetailPanel.style.backgroundBlendMode = '';
+        return;
+      }
+      const thumb = mediaThumbUrl(rawBg, 800, 80);
+      invBlookDetailPanel.classList.add('inv-blook-detail--raw-bg');
+      if (pat) {
+        const patThumb = mediaThumbUrl(pat, 480, 72);
+        invBlookDetailPanel.style.backgroundImage = `url(${JSON.stringify(thumb)}), url(${JSON.stringify(patThumb)})`;
+        invBlookDetailPanel.style.backgroundSize = 'cover, 240px';
+        invBlookDetailPanel.style.backgroundPosition = 'center, center';
+        invBlookDetailPanel.style.backgroundRepeat = 'no-repeat, repeat';
+        invBlookDetailPanel.style.backgroundBlendMode = 'normal, multiply';
+      } else {
+        invBlookDetailPanel.style.backgroundImage = `url(${JSON.stringify(thumb)})`;
+        invBlookDetailPanel.style.backgroundSize = 'cover';
+        invBlookDetailPanel.style.backgroundPosition = 'center';
+        invBlookDetailPanel.style.backgroundRepeat = 'no-repeat';
         invBlookDetailPanel.style.backgroundBlendMode = '';
       }
     }
@@ -7725,10 +7806,11 @@
       }
 
       if (invPanelVisual) {
+        const panelImg = imageUrl ? escapeHtml(mediaThumbUrl(imageUrl, unlocked ? 420 : 360, 85)) : '';
         if (unlocked && imageUrl) {
-          invPanelVisual.innerHTML = `<img src="${escapeHtml(imageUrl)}" alt="" decoding="async">`;
+          invPanelVisual.innerHTML = `<img src="${panelImg}" alt="" decoding="async">`;
         } else if (imageUrl) {
-          invPanelVisual.innerHTML = `<div class="inv-blook-detail-silhouette"><img src="${escapeHtml(imageUrl)}" alt="" decoding="async"><div class="inv-blook-lock-overlay" aria-hidden="true"><span class="material-symbols-outlined">lock</span></div></div>`;
+          invPanelVisual.innerHTML = `<div class="inv-blook-detail-silhouette"><img src="${panelImg}" alt="" decoding="async"><div class="inv-blook-lock-overlay" aria-hidden="true"><span class="material-symbols-outlined">lock</span></div></div>`;
         } else {
           const rc = getRarityColor((rep.rarity || 'common').toLowerCase());
           invPanelVisual.innerHTML = `<div class="inv-blook-detail-silhouette" style="background:#0a0c10;"><span class="inv-blook-ph" style="color:${rc};font-size:3rem;"><i class="fas fa-dragon"></i></span><div class="inv-blook-lock-overlay" aria-hidden="true"><span class="material-symbols-outlined">lock</span></div></div>`;
@@ -7744,7 +7826,7 @@
       const vis = document.getElementById('inv-blook-modal-visual');
       if (vis) {
         vis.innerHTML = rep.imageUrl
-          ? `<img src="${escapeHtml(rep.imageUrl)}" alt="" decoding="async">`
+          ? `<img src="${escapeHtml(mediaThumbUrl(rep.imageUrl, 320, 85))}" alt="" decoding="async">`
           : `<span class="inv-blook-ph" style="color:${rc};"><i class="fas fa-dragon"></i></span>`;
       }
       const nm = document.getElementById('inv-blook-modal-name');
@@ -8065,10 +8147,11 @@
           const inner = document.createElement('div');
           inner.className = 'inv-blook-slot-inner';
           const imgUrl = String(def.imageUrl || rep.imageUrl || '').trim();
+          const slotImgSrc = imgUrl ? escapeHtml(mediaThumbUrl(imgUrl, 200, 80)) : '';
           if (unlocked) {
             const rc = getRarityColor((def.rarity || rep.rarity || 'common').toLowerCase());
             if (imgUrl) {
-              inner.innerHTML = `<img src="${escapeHtml(imgUrl)}" alt="" loading="lazy" decoding="async">`;
+              inner.innerHTML = `<img src="${slotImgSrc}" alt="" loading="lazy" decoding="async">`;
             } else {
               inner.innerHTML = `<span class="inv-blook-ph" style="color:${rc};font-size:1.75rem;"><i class="fas fa-dragon"></i></span>`;
             }
@@ -8081,7 +8164,7 @@
           } else if (imgUrl) {
             inner.innerHTML = `
               <div class="inv-blook-silhouette-wrap">
-                <img class="inv-blook-silhouette-img" src="${escapeHtml(imgUrl)}" alt="" loading="lazy" decoding="async">
+                <img class="inv-blook-silhouette-img" src="${slotImgSrc}" alt="" loading="lazy" decoding="async">
                 <div class="inv-blook-lock-overlay" aria-hidden="true"><span class="material-symbols-outlined">lock</span></div>
               </div>`;
           } else {
@@ -9232,13 +9315,14 @@
           lazyGameBgObserver.unobserve(el);
           const url = el.dataset.lazyBg;
           if (!url) return;
+          const loadUrl = mediaThumbUrl(url, 900, 82);
           const img = new Image();
           img.onload = () => {
-            el.style.backgroundImage = `url(${JSON.stringify(String(url))})`;
+            el.style.backgroundImage = `url(${JSON.stringify(loadUrl)})`;
             el.classList.add('lazy-bg-loaded');
           };
           img.onerror = () => el.classList.add('lazy-bg-loaded');
-          img.src = url;
+          img.src = loadUrl;
         });
       }, { root: null, rootMargin: '180px 0px', threshold: 0.01 });
       return lazyGameBgObserver;
@@ -9248,7 +9332,8 @@
       const obs = getLazyGameBgObserver();
       if (!obs) {
         const url = el.dataset.lazyBg;
-        el.style.backgroundImage = `url(${JSON.stringify(String(url))})`;
+        const loadUrl = mediaThumbUrl(url, 900, 82);
+        el.style.backgroundImage = `url(${JSON.stringify(loadUrl)})`;
         el.classList.add('lazy-bg-loaded');
         return;
       }
@@ -9261,13 +9346,14 @@
               const t = entry.target;
               const url = t.dataset.lazyBg;
               if (!url) return;
+              const loadUrl = mediaThumbUrl(url, 520, 82);
               const img = new Image();
               img.onload = () => {
-                t.style.backgroundImage = `url(${JSON.stringify(String(url))})`;
+                t.style.backgroundImage = `url(${JSON.stringify(loadUrl)})`;
                 t.classList.add('lazy-bg-loaded');
               };
               img.onerror = () => t.classList.add('lazy-bg-loaded');
-              img.src = url;
+              img.src = loadUrl;
             });
           }, { root: rootEl, rootMargin: '120px 0px', threshold: 0.01 });
           rObs.observe(el);
@@ -9285,14 +9371,15 @@
         const bg = slides[i]?.querySelector('.slide-background');
         if (!bg || !bg.dataset.lazyBg || bg.dataset.bgReady === '1') return;
         const url = bg.dataset.lazyBg;
+        const loadUrl = mediaThumbUrl(url, 1200, 82);
         const img = new Image();
         img.onload = () => {
-          bg.style.backgroundImage = `url(${JSON.stringify(String(url))})`;
+          bg.style.backgroundImage = `url(${JSON.stringify(loadUrl)})`;
           bg.classList.add('lazy-bg-loaded');
           bg.dataset.bgReady = '1';
         };
         img.onerror = () => { bg.dataset.bgReady = '1'; };
-        img.src = url;
+        img.src = loadUrl;
       });
     }
 
