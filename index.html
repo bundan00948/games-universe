@@ -1599,7 +1599,7 @@
       .inv-blook-detail {
         flex: 0 0 340px;
         position: sticky;
-        top: 88px;
+        top: 64px;
         align-self: flex-start;
         max-height: min(78vh, 820px);
       }
@@ -1623,10 +1623,10 @@
       line-height: 1.2;
     }
     .inv-blook-pack-rule {
-      height: 2px;
+      height: 1px;
       width: 100%;
-      background: linear-gradient(90deg, rgba(42,255,158,0.55), rgba(255,61,108,0.35), transparent);
-      border-radius: 2px;
+      background: rgba(120, 128, 140, 0.55);
+      border-radius: 0;
       margin-bottom: 14px;
     }
     .inv-blook-pack-empty {
@@ -6810,18 +6810,44 @@
       document.getElementById(ids.friendCount).textContent = friendsSnap.size;
 
       const blooksSnap = await getDocs(query(collection(db, "inventory"), where("userId", "==", userId)));
-      const ownedNames = new Set(blooksSnap.docs.map(d => d.data().itemName));
+      const ownedNames = new Set(blooksSnap.docs.map(d => (d.data().itemName || '').trim()).filter(Boolean));
       const blookUnique = ownedNames.size;
-      const blookCopies = blooksSnap.size;
-      document.getElementById(ids.blookCount).textContent = blookCopies;
-      document.getElementById(ids.blookTotal).textContent = blookUnique;
-      const blookBarPct = Math.min(100, blookUnique * (100 / 45));
+      const catalogUniqueTotal = await getBlookCatalogUniqueCount();
+      const blookTotalDen = catalogUniqueTotal > 0 ? catalogUniqueTotal : 45;
+      document.getElementById(ids.blookCount).textContent = blookUnique;
+      document.getElementById(ids.blookTotal).textContent = blookTotalDen;
+      const blookBarPct = Math.min(100, (blookUnique / blookTotalDen) * 100);
       document.getElementById(ids.blookProgress).style.width = `${blookBarPct}%`;
 
-      const top5 = blooksSnap.docs.sort((a, b) => (b.data().starsGained || 0) - (a.data().starsGained || 0)).slice(0, 5);
-      document.getElementById(ids.topBlooks).innerHTML = top5.length ? top5.map(d => {
+      const byNameBest = new Map();
+      blooksSnap.docs.forEach((d) => {
         const bl = d.data();
-        return `<div class="up-blook-card"><div class="up-blook-img"><img src="${escapeHtml(bl.imageUrl || 'https://via.placeholder.com/52')}" alt="${escapeHtml(bl.itemName)}" loading="lazy" decoding="async"></div><div class="up-blook-name">${bl.itemName}</div><div class="up-blook-rarity">${bl.rarity}</div></div>`;
+        const name = (bl.itemName || '').trim();
+        if (!name) return;
+        const prev = byNameBest.get(name);
+        const rNew = raritySortIndex(bl.rarity);
+        const rOld = prev ? raritySortIndex(prev.rarity) : -1;
+        const starsNew = Number(bl.starsGained) || 0;
+        const starsOld = prev ? (Number(prev.starsGained) || 0) : -1;
+        if (!prev || rNew > rOld || (rNew === rOld && starsNew > starsOld)) {
+          byNameBest.set(name, {
+            itemName: name,
+            rarity: bl.rarity,
+            starsGained: bl.starsGained,
+            imageUrl: bl.imageUrl
+          });
+        }
+      });
+      const sortedTop = [...byNameBest.values()].sort((a, b) => {
+        const rd = raritySortIndex(b.rarity) - raritySortIndex(a.rarity);
+        if (rd !== 0) return rd;
+        const sd = (Number(b.starsGained) || 0) - (Number(a.starsGained) || 0);
+        if (sd !== 0) return sd;
+        return (a.itemName || '').localeCompare(b.itemName || '');
+      }).slice(0, 5);
+      document.getElementById(ids.topBlooks).innerHTML = sortedTop.length ? sortedTop.map((bl) => {
+        const img = escapeHtml(mediaThumbUrl(bl.imageUrl || 'https://via.placeholder.com/52', 120, 82));
+        return `<div class="up-blook-card"><div class="up-blook-img"><img src="${img}" alt="${escapeHtml(bl.itemName)}" loading="lazy" decoding="async"></div><div class="up-blook-name">${escapeHtml(bl.itemName)}</div><div class="up-blook-rarity">${escapeHtml(bl.rarity || '')}</div></div>`;
       }).join('') : '<div style="color:var(--text-secondary);font-size:0.8rem;">No blooks yet</div>';
 
       const friendIds = friendsSnap.docs.map(d => d.data().friendId);
@@ -8408,6 +8434,25 @@
         console.error('Inventory catalog load failed', e);
         inventoryCatalogCache = [];
         inventoryCatalogLoaded = true;
+      }
+    }
+
+    /** Unique blook names defined across all non-banner packs (denominator for profile progress). */
+    async function getBlookCatalogUniqueCount() {
+      try {
+        const snap = await getDocs(collection(db, 'packs'));
+        const names = new Set();
+        snap.docs.forEach((d) => {
+          const p = d.data();
+          if (p.shopType === 'banner') return;
+          (p.items || []).forEach((it) => {
+            const n = (it && it.name ? String(it.name) : '').trim();
+            if (n) names.add(n);
+          });
+        });
+        return names.size;
+      } catch (_) {
+        return 0;
       }
     }
 
