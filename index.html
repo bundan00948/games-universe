@@ -8430,15 +8430,25 @@
           .map(d => ({ id: d.id, ...d.data() }))
           .filter(p => p.shopType !== 'banner');
         inventoryCatalogLoaded = true;
+        blookCatalogUniqueCountCache = null;
       } catch (e) {
         console.error('Inventory catalog load failed', e);
         inventoryCatalogCache = [];
         inventoryCatalogLoaded = true;
+        blookCatalogUniqueCountCache = null;
       }
     }
 
+    let blookCatalogUniqueCountCache = null;
+    let blookCatalogUniqueCountCacheAt = 0;
+    const BLOOK_CATALOG_UNIQUE_TTL_MS = 120000;
+
     /** Unique blook names defined across all non-banner packs (denominator for profile progress). */
     async function getBlookCatalogUniqueCount() {
+      const now = Date.now();
+      if (blookCatalogUniqueCountCache != null && now - blookCatalogUniqueCountCacheAt < BLOOK_CATALOG_UNIQUE_TTL_MS) {
+        return blookCatalogUniqueCountCache;
+      }
       try {
         const snap = await getDocs(collection(db, 'packs'));
         const names = new Set();
@@ -8450,7 +8460,9 @@
             if (n) names.add(n);
           });
         });
-        return names.size;
+        blookCatalogUniqueCountCache = names.size;
+        blookCatalogUniqueCountCacheAt = now;
+        return blookCatalogUniqueCountCache;
       } catch (_) {
         return 0;
       }
