@@ -4,7 +4,7 @@ All notable changes to this project are documented here. The app is a single fil
 
 ## Unreleased
 
-- **Theme:** mint page backdrop centered on `#42f5bf`, light grey panels (`--panel-bg` / `--panel-bg-elevated`), slate text, teal accents (`#0d9488`).
+- **Theme:** main field uses `#42f5bf` mint; panels are mint-tinted grey with **white** type; bright mint accents (tabs, CTAs) use **black** type for contrast.
 - Pack unbox: smaller on-screen pack scale during open animation.
 - Discord special pulls: embed uses blook art as **thumbnail only**; message body lists pull line, stars, rarity (title case), and chance.
 
