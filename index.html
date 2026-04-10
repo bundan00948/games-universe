@@ -5278,6 +5278,21 @@
               </div>
             </div>
             <div class="staff-card">
+              <div class="staff-card-header"><h3>Discord — special pull alerts</h3></div>
+              <p style="font-size:0.82rem;color:var(--text-secondary);margin-bottom:12px;line-height:1.45;">Webhook posts when a player <strong>collects</strong> a pack pull. Sends if the blook or rarity has “Discord announce” enabled in the editors below, <strong>or</strong> if auto rules match (min rarity rank / max listed chance).</p>
+              <div class="staff-form-group"><label><input type="checkbox" id="staff-discord-enabled" checked style="width:auto;margin-right:8px;"> Enable Discord webhook posts</label></div>
+              <div class="staff-form-group"><label>Webhook URL</label><input type="url" id="staff-discord-webhook-url" placeholder="https://discord.com/api/webhooks/..." autocomplete="off"></div>
+              <div class="staff-form-group"><label>Discord server invite (optional link for your team)</label><input type="url" id="staff-discord-invite-url" placeholder="https://discord.gg/..." autocomplete="off"></div>
+              <div class="staff-flex-row" style="gap:12px;flex-wrap:wrap;align-items:flex-end;">
+                <div class="staff-form-group" style="margin:0;flex:1;min-width:160px;"><label>Auto: min rarity rank (0 = common)</label><input type="number" id="staff-discord-min-rarity-idx" min="0" max="99" placeholder="e.g. 4 for legendary+"></div>
+                <div class="staff-form-group" style="margin:0;flex:1;min-width:160px;"><label>Auto: max listed chance % (≤)</label><input type="number" id="staff-discord-max-chance" min="0" step="0.01" placeholder="e.g. 5 for ≤5%"></div>
+              </div>
+              <p style="font-size:0.72rem;color:var(--text-secondary);margin:-4px 0 10px;">Leave auto fields empty to disable those rules. Rarity rank uses your <strong>Rarity order</strong> list (0 = first = lowest).</p>
+              <div class="staff-form-group"><label>Embed footer text</label><input type="text" id="staff-discord-footer" placeholder="Game Universe · special pull" maxlength="80"></div>
+              <button type="button" class="staff-btn staff-btn-primary" id="staff-discord-save">Save Discord settings</button>
+              <span id="staff-discord-save-status" style="font-size:0.78rem;color:var(--text-secondary);margin-left:10px;"></span>
+            </div>
+            <div class="staff-card">
               <div class="staff-card-header"><h3>Rarity order</h3><button type="button" class="staff-btn staff-btn-primary staff-btn-sm" id="staff-rarity-order-open"><i class="fas fa-sort"></i> Edit order</button></div>
               <p style="font-size:0.82rem;color:var(--text-secondary);">Sort order for inventory and pack editor lists.</p>
             </div>
@@ -5759,20 +5774,66 @@
     const db = getFirestore(app);
     const storage = getStorage(app);
 
-    /** Discord webhook for staff-flagged special blooks/rarities. Optional override: Firestore siteConfig/settings → discordSpecialPullWebhookUrl. */
+    /** Default webhook if not set in Staff → Discord or Firestore. */
     const SPECIAL_PULL_DISCORD_WEBHOOK = 'https://discord.com/api/webhooks/1491040161155256351/8huNJrIDwJpsfVi30xaCisPELzWTh3-SbrK4de92bKkhSVQTayEHFZpyg8yHxMqcOXEQ';
-    let specialPullDiscordWebhookMemo = null;
+    let discordPullSettingsCache = null;
 
-    async function getSpecialPullDiscordWebhookUrl() {
-      if (specialPullDiscordWebhookMemo !== null) return specialPullDiscordWebhookMemo;
+    function invalidateDiscordPullSettings() {
+      discordPullSettingsCache = null;
+    }
+
+    async function getDiscordPullSettings() {
+      if (discordPullSettingsCache) return discordPullSettingsCache;
+      const fallback = {
+        enabled: true,
+        webhookUrl: SPECIAL_PULL_DISCORD_WEBHOOK || '',
+        footerText: 'Game Universe · special pull',
+        minRarityIdx: null,
+        maxChancePct: null,
+        inviteUrl: ''
+      };
       try {
         const s = await getDoc(doc(db, 'siteConfig', 'settings'));
-        const u = s.exists() ? String(s.data().discordSpecialPullWebhookUrl || '').trim() : '';
-        specialPullDiscordWebhookMemo = u || SPECIAL_PULL_DISCORD_WEBHOOK || '';
+        if (!s.exists()) {
+          discordPullSettingsCache = fallback;
+          return discordPullSettingsCache;
+        }
+        const d = s.data();
+        const urlRaw = String(d.discordAnnounceWebhookUrl || d.discordSpecialPullWebhookUrl || '').trim();
+        let minIdx = null;
+        if (d.discordAnnounceMinRarityIdx != null && String(d.discordAnnounceMinRarityIdx).trim() !== '') {
+          const n = parseInt(d.discordAnnounceMinRarityIdx, 10);
+          minIdx = Number.isFinite(n) ? Math.max(0, n) : null;
+        }
+        let maxCh = null;
+        if (d.discordAnnounceMaxChancePct != null && String(d.discordAnnounceMaxChancePct).trim() !== '') {
+          const x = Number(d.discordAnnounceMaxChancePct);
+          maxCh = Number.isFinite(x) ? x : null;
+        }
+        discordPullSettingsCache = {
+          enabled: d.discordAnnounceEnabled !== false && d.discordAnnounceEnabled !== 'false',
+          webhookUrl: urlRaw || SPECIAL_PULL_DISCORD_WEBHOOK || '',
+          footerText: (String(d.discordAnnounceFooterText || 'Game Universe · special pull').trim() || 'Game Universe · special pull').slice(0, 200),
+          minRarityIdx: minIdx,
+          maxChancePct: maxCh,
+          inviteUrl: String(d.discordInviteUrl || '').trim()
+        };
       } catch (_) {
-        specialPullDiscordWebhookMemo = SPECIAL_PULL_DISCORD_WEBHOOK || '';
+        discordPullSettingsCache = fallback;
       }
-      return specialPullDiscordWebhookMemo;
+      return discordPullSettingsCache;
+    }
+
+    async function shouldDiscordAnnounceSpecialPull(rarity, chancePct, catEntry) {
+      const st = await getDiscordPullSettings();
+      if (!st || !st.enabled || !st.webhookUrl) return false;
+      if (catEntry && catEntry.discordAnnounce) return true;
+      const rDef = getRarityDef(rarity);
+      if (rDef && rDef.discordAnnounce) return true;
+      const ri = raritySortIndex(rarity);
+      if (st.minRarityIdx != null && ri >= st.minRarityIdx) return true;
+      if (st.maxChancePct != null && chancePct != null && Number.isFinite(Number(chancePct)) && Number(chancePct) <= st.maxChancePct) return true;
+      return false;
     }
 
     function discordEmbedColorFromHex(hex) {
@@ -7235,8 +7296,9 @@
     }
 
     async function announceSpecialBlookPullToDiscord(ctx) {
-      const webhookUrl = await getSpecialPullDiscordWebhookUrl();
-      if (!webhookUrl) return;
+      const st = await getDiscordPullSettings();
+      const webhookUrl = st.webhookUrl;
+      if (!st.enabled || !webhookUrl) return;
       const rarityKey = (ctx.rarity || '').toString();
       const accentHex = getRarityColor(rarityKey);
       const thumbRaw = (ctx.imageUrl || '').trim();
@@ -7244,6 +7306,7 @@
       const chanceStr = ctx.chancePct != null && Number.isFinite(Number(ctx.chancePct))
         ? `${Number(ctx.chancePct)}%`
         : '—';
+      const inviteLine = st.inviteUrl ? `\n**Discord:** ${st.inviteUrl}` : '';
       const embed = {
         color: discordEmbedColorFromHex(accentHex),
         title: ctx.blookName || 'Blook',
@@ -7252,9 +7315,9 @@
           `**Pack:** ${ctx.packName || '—'}`,
           `**Stars (this pull):** ${ctx.starsGained != null ? ctx.starsGained : '—'}`,
           `**Listed drop chance:** ${chanceStr}`,
-          `**Player:** ${ctx.username || '—'} \`${ctx.userId || '—'}\``
+          `**Player:** ${ctx.username || '—'} \`${ctx.userId || '—'}\`${inviteLine}`
         ].join('\n'),
-        footer: { text: 'Game Universe · special pull' },
+        footer: { text: (st.footerText || 'Game Universe · special pull').slice(0, 2048) },
         timestamp: new Date().toISOString()
       };
       if (thumb) {
@@ -7615,7 +7678,23 @@
         const sEl = document.getElementById('staff-daily-reward-stars');
         if (cEl) cEl.value = dr.coins != null ? dr.coins : 50;
         if (sEl) sEl.value = dr.stars != null ? dr.stars : 10;
+        const wh = String(d.discordAnnounceWebhookUrl || d.discordSpecialPullWebhookUrl || SPECIAL_PULL_DISCORD_WEBHOOK || '').trim();
+        const enEl = document.getElementById('staff-discord-enabled');
+        if (enEl) enEl.checked = d.discordAnnounceEnabled !== false && d.discordAnnounceEnabled !== 'false';
+        const whEl = document.getElementById('staff-discord-webhook-url');
+        if (whEl) whEl.value = wh;
+        const invEl = document.getElementById('staff-discord-invite-url');
+        if (invEl) invEl.value = String(d.discordInviteUrl || '').trim();
+        const minEl = document.getElementById('staff-discord-min-rarity-idx');
+        if (minEl) minEl.value = d.discordAnnounceMinRarityIdx != null && String(d.discordAnnounceMinRarityIdx).trim() !== '' ? d.discordAnnounceMinRarityIdx : '';
+        const mcEl = document.getElementById('staff-discord-max-chance');
+        if (mcEl) mcEl.value = d.discordAnnounceMaxChancePct != null && String(d.discordAnnounceMaxChancePct).trim() !== '' ? d.discordAnnounceMaxChancePct : '';
+        const ftEl = document.getElementById('staff-discord-footer');
+        if (ftEl) ftEl.value = String(d.discordAnnounceFooterText || 'Game Universe · special pull').trim();
+        const stEl = document.getElementById('staff-discord-save-status');
+        if (stEl) stEl.textContent = '';
       } catch (e) {}
+      invalidateDiscordPullSettings();
     }
 
     let staffStarBadgeRulesDraft = [];
@@ -8039,13 +8118,11 @@
                 starsGained: currentGiftCard.starsGained,
                 timestamp: serverTimestamp()
               });
-              const rDefAnnounce = getRarityDef(currentGiftCard.rarity);
               const packDocCached = (inventoryCatalogCache || []).find(p => p.id === currentGiftCard.packId) || null;
               const catEntry = findPackCatalogItemByName(packDocCached, currentGiftCard.name);
-              const blookAnnounce = !!(catEntry && catEntry.discordAnnounce);
-              const rarityAnnounce = !!(rDefAnnounce && rDefAnnounce.discordAnnounce);
-              if (blookAnnounce || rarityAnnounce) {
-                const chanceVal = catEntry && catEntry.chance != null ? catEntry.chance : currentGiftCard.chance;
+              const chanceVal = catEntry && catEntry.chance != null ? catEntry.chance : currentGiftCard.chance;
+              const announceOk = await shouldDiscordAnnounceSpecialPull(currentGiftCard.rarity, chanceVal, catEntry);
+              if (announceOk) {
                 const uname = (userNameSpan && userNameSpan.textContent) ? userNameSpan.textContent.trim() : (currentUser.displayName || currentUser.email || '');
                 announceSpecialBlookPullToDiscord({
                   blookName: currentGiftCard.name,
@@ -10651,6 +10728,46 @@
           if (currentUser) refreshDailyRewardUI(currentUser.uid);
           showNotification('Daily reward amounts saved', 'success');
         } catch (e) { showNotification('Save failed: ' + e.message, 'error'); }
+      });
+
+      document.getElementById('staff-discord-save')?.addEventListener('click', async () => {
+        const statusEl = document.getElementById('staff-discord-save-status');
+        if (statusEl) statusEl.textContent = 'Saving…';
+        const enabled = document.getElementById('staff-discord-enabled')?.checked !== false;
+        const url = document.getElementById('staff-discord-webhook-url')?.value.trim() || '';
+        const invite = document.getElementById('staff-discord-invite-url')?.value.trim() || '';
+        const minStr = document.getElementById('staff-discord-min-rarity-idx')?.value.trim() || '';
+        const maxStr = document.getElementById('staff-discord-max-chance')?.value.trim() || '';
+        const footer = (document.getElementById('staff-discord-footer')?.value.trim() || 'Game Universe · special pull').slice(0, 200);
+        const payload = {
+          discordAnnounceEnabled: enabled,
+          discordAnnounceWebhookUrl: url,
+          discordSpecialPullWebhookUrl: url,
+          discordInviteUrl: invite,
+          discordAnnounceFooterText: footer,
+          updatedAt: serverTimestamp()
+        };
+        if (minStr === '') payload.discordAnnounceMinRarityIdx = deleteField();
+        else payload.discordAnnounceMinRarityIdx = Math.max(0, parseInt(minStr, 10) || 0);
+        if (maxStr === '') payload.discordAnnounceMaxChancePct = deleteField();
+        else {
+          const x = Number(maxStr);
+          if (!Number.isFinite(x)) {
+            if (statusEl) statusEl.textContent = '';
+            showNotification('Max chance must be a number', 'error');
+            return;
+          }
+          payload.discordAnnounceMaxChancePct = x;
+        }
+        try {
+          await setDoc(doc(db, 'siteConfig', 'settings'), payload, { merge: true });
+          invalidateDiscordPullSettings();
+          if (statusEl) statusEl.textContent = 'Saved.';
+          showNotification('Discord settings saved', 'success');
+        } catch (e) {
+          if (statusEl) statusEl.textContent = '';
+          showNotification('Save failed: ' + e.message, 'error');
+        }
       });
       document.getElementById('staff-rarity-def-add')?.addEventListener('click', () => openStaffRarityDefModal('add'));
       document.getElementById('staff-rarity-def-gradient')?.addEventListener('change', toggleStaffRarityGradUI);
