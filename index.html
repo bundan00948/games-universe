@@ -7295,35 +7295,39 @@
       return d.solid || '#a8b0c8';
     }
 
+    function capitalizeRarityLabel(r) {
+      const s = String(r || '').trim();
+      if (!s) return '—';
+      return s.charAt(0).toUpperCase() + s.slice(1).toLowerCase();
+    }
+
     async function announceSpecialBlookPullToDiscord(ctx) {
       const st = await getDiscordPullSettings();
       const webhookUrl = st.webhookUrl;
       if (!st.enabled || !webhookUrl) return;
-      const rarityKey = (ctx.rarity || '').toString();
+      const rarityKey = (ctx.rarity || '').toString().trim();
+      const rarityLower = rarityKey ? rarityKey.toLowerCase() : 'unknown';
       const accentHex = getRarityColor(rarityKey);
       const thumbRaw = (ctx.imageUrl || '').trim();
       const thumb = /^https?:\/\//i.test(thumbRaw) ? mediaThumbUrl(thumbRaw, 512, 82) : null;
       const chanceStr = ctx.chancePct != null && Number.isFinite(Number(ctx.chancePct))
         ? `${Number(ctx.chancePct)}%`
         : '—';
-      const inviteLine = st.inviteUrl ? `\n**Discord:** ${st.inviteUrl}` : '';
+      const blookTitle = (ctx.blookName || 'Blook').trim();
+      const who = (ctx.username || 'player').trim() || 'player';
+      const starsLine = ctx.starsGained != null && ctx.starsGained !== '' ? String(ctx.starsGained) : '—';
       const embed = {
         color: discordEmbedColorFromHex(accentHex),
-        title: ctx.blookName || 'Blook',
+        title: blookTitle,
         description: [
-          `**Rarity:** ${rarityKey || '—'}`,
-          `**Pack:** ${ctx.packName || '—'}`,
-          `**Stars (this pull):** ${ctx.starsGained != null ? ctx.starsGained : '—'}`,
-          `**Listed drop chance:** ${chanceStr}`,
-          `**Player:** ${ctx.username || '—'} \`${ctx.userId || '—'}\`${inviteLine}`
-        ].join('\n'),
-        footer: { text: (st.footerText || 'Game Universe · special pull').slice(0, 2048) },
-        timestamp: new Date().toISOString()
+          `@${who} pulled a ${rarityLower} ${blookTitle} blook!`,
+          '',
+          `**Stars:** ⭐ ${starsLine}`,
+          `**Rarity:** ${capitalizeRarityLabel(rarityKey)}`,
+          `**Chance:** ${chanceStr}`
+        ].join('\n')
       };
-      if (thumb) {
-        embed.thumbnail = { url: thumb };
-        embed.image = { url: thumb };
-      }
+      if (thumb) embed.thumbnail = { url: thumb };
       try {
         const res = await fetch(webhookUrl, {
           method: 'POST',
@@ -8044,7 +8048,7 @@
         const maxH = Math.min(window.innerHeight * 0.62, 560);
         const w = nw > 0 ? nw : 280;
         const h = nh > 0 ? nh : 280;
-        const scale = Math.min(1, maxW / w, maxH / h) * 0.78;
+        const scale = Math.min(1, maxW / w, maxH / h) * 0.62;
         stack.style.width = `${Math.round(w * scale)}px`;
         stack.style.height = `${Math.round(h * scale)}px`;
       };
