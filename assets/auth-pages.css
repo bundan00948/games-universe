@@ -1,4 +1,4 @@
-/* Shared auth gate pages (login.html, signup.html) */
+/* Shared auth gate pages (login.html, signup.html) — static pattern background, centered card */
 :root {
   --yellow: #ffffa0;
   --purple: #ee66ff;
@@ -22,11 +22,6 @@ body {
     radial-gradient(ellipse 90% 55% at 12% 18%, rgba(255, 255, 160, 0.22), transparent 52%),
     radial-gradient(ellipse 75% 50% at 88% 82%, rgba(238, 102, 255, 0.28), transparent 50%),
     linear-gradient(165deg, #120818 0%, #1e0f2a 45%, #140a1c 100%);
-  animation: authAmbience 14s ease-in-out infinite alternate;
-}
-@keyframes authAmbience {
-  0% { filter: hue-rotate(0deg) brightness(1); }
-  100% { filter: hue-rotate(12deg) brightness(1.05); }
 }
 .auth-scene::before {
   content: "";
@@ -37,12 +32,7 @@ body {
     linear-gradient(rgba(255, 255, 160, 0.06) 1px, transparent 1px),
     linear-gradient(90deg, rgba(238, 102, 255, 0.07) 1px, transparent 1px);
   background-size: 140px 140px;
-  animation: authGridDrift 18s linear infinite;
   pointer-events: none;
-}
-@keyframes authGridDrift {
-  0% { transform: translate(0, 0); }
-  100% { transform: translate(-40px, -80px); }
 }
 .auth-scene::after {
   content: "";
@@ -57,19 +47,13 @@ body {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
+  align-items: center;
+  justify-content: center;
   padding: clamp(16px, 3vw, 28px);
-}
-.auth-top {
-  flex: 1;
-  min-height: 8vh;
 }
 .auth-card {
   width: 100%;
   max-width: 420px;
-  margin-left: auto;
-  margin-right: auto;
-  margin-top: auto;
-  margin-bottom: max(20px, 5vh);
   padding: clamp(22px, 4vw, 32px);
   border-radius: 22px;
   background: var(--panel);
@@ -168,6 +152,3 @@ body {
   color: #ff8a80;
 }
 .auth-msg.ok { color: #b9f6ca; }
-@media (prefers-reduced-motion: reduce) {
-  .auth-scene, .auth-scene::before { animation: none !important; }
-}

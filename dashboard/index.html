@@ -7219,6 +7219,12 @@
           case 'settings-page': loadSettings(user.uid); break;
           case 'staff-page': loadStaffPanel(); break;
         }
+        /* Main games load uses IntersectionObserver on #main-games-load-placeholder with root #main-content.
+           When the active tab is not main-page (e.g. Profile after login from login.html), that placeholder
+           is never intersecting — observer never fires and games stay on "permanent load". Mount in background once. */
+        if (!mainPageGamesMounted) {
+          mountMainPageGamesContent().catch((e) => console.error('mountMainPageGamesContent', e));
+        }
       } else {
         currentUserPermissions = [];
         currentUserTitle = 'User';

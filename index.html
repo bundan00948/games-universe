@@ -20,6 +20,7 @@
       --muted: #e8c8f8;
       --discord: #5865f2;
       --hero: url("https://i.postimg.cc/SK37fnxF/Screenshot-2026-04-11-at-18-25-43-removebg.png");
+      --content-max: 1120px;
     }
     * { margin: 0; padding: 0; box-sizing: border-box; }
     html { color-scheme: dark; }
@@ -32,13 +33,16 @@
         radial-gradient(ellipse 70% 50% at 90% 80%, rgba(255, 255, 160, 0.12), transparent 50%),
         linear-gradient(165deg, var(--bg) 0%, var(--bg-mid) 45%, #140a1c 100%);
     }
-    .shell {
-      max-width: 1120px;
-      margin: 0 auto;
-      padding: clamp(24px, 4vw, 40px) clamp(20px, 4vw, 40px) clamp(28px, 5vw, 56px);
+    .page-root {
       min-height: 100vh;
       display: flex;
       flex-direction: column;
+    }
+    .top-bar {
+      max-width: var(--content-max);
+      margin: 0 auto;
+      width: 100%;
+      padding: clamp(24px, 4vw, 40px) clamp(20px, 4vw, 40px) clamp(12px, 2vh, 20px);
     }
     .brand {
       font-family: 'Titan One', 'Nunito', sans-serif;
@@ -49,34 +53,51 @@
       -webkit-background-clip: text;
       background-clip: text;
       -webkit-text-fill-color: transparent;
-      margin-bottom: clamp(28px, 5vh, 48px);
-      align-self: flex-start;
     }
-    .grid {
+    /* Full-bleed row: hero occupies entire right half of the viewport and is vertically centered */
+    .split-bleed {
+      flex: 1;
+      display: flex;
+      min-height: 0;
+      width: 100vw;
+      margin-left: calc(50% - 50vw);
+    }
+    .split-inner {
       flex: 1;
       display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: clamp(28px, 5vw, 64px);
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
       align-items: center;
-      width: 100%;
+      gap: clamp(16px, 3vw, 40px);
+      padding: 0 0 0 clamp(20px, 4vw, 40px);
+      max-width: none;
     }
     @media (max-width: 900px) {
-      .grid { grid-template-columns: 1fr; gap: 32px; }
-      .visual { order: -1; min-height: 300px; max-width: 100%; }
+      .split-inner {
+        grid-template-columns: 1fr;
+        padding: 0 clamp(20px, 4vw, 40px);
+        gap: 28px;
+      }
+      .visual { order: -1; min-height: 300px !important; width: 100% !important; margin-right: 0 !important; border-radius: 20px !important; }
     }
+    .copy {
+      max-width: 34rem;
+      padding-right: clamp(8px, 2vw, 24px);
+    }
+    /* Only this line: Titan One, larger */
     .tagline {
-      font-size: clamp(1.05rem, 2.2vw, 1.35rem);
-      font-weight: 900;
+      font-family: 'Titan One', 'Nunito', sans-serif;
+      font-weight: 400;
+      font-size: clamp(1.65rem, 4.2vw, 2.85rem);
+      line-height: 1.2;
       color: var(--yellow);
-      margin-bottom: 14px;
-      line-height: 1.35;
-      text-shadow: 0 0 24px rgba(255, 255, 160, 0.25);
+      margin-bottom: 16px;
+      text-shadow: 0 0 28px rgba(255, 255, 160, 0.3);
     }
     .lead {
       font-size: clamp(0.98rem, 1.85vw, 1.12rem);
+      font-weight: 700;
       line-height: 1.65;
       color: var(--muted);
-      max-width: 36rem;
       margin-bottom: 28px;
     }
     .actions {
@@ -128,45 +149,51 @@
       transform: translateY(-2px);
       box-shadow: 0 10px 28px rgba(88, 101, 242, 0.45);
     }
-    /* Hero: framed panel + remote PNG (previous setup), art slightly larger than “contain” */
     .visual {
       position: relative;
-      min-height: min(560px, 66vh);
-      border-radius: 24px;
-      padding: 10px;
-      background: linear-gradient(145deg, rgba(238, 102, 255, 0.2) 0%, rgba(44, 28, 62, 0.9) 50%, rgba(255, 255, 160, 0.08) 100%);
+      height: min(78vh, 820px);
+      width: calc(100% + max(0px, (100vw - var(--content-max)) / 2 + clamp(20px, 4vw, 40px)));
+      margin-right: calc(50% - 50vw);
+      justify-self: stretch;
+      align-self: center;
+      border-radius: 22px 0 0 22px;
       border: 1px solid rgba(255, 255, 160, 0.35);
+      border-right: none;
       box-shadow:
         0 0 0 1px rgba(238, 102, 255, 0.2) inset,
-        0 24px 60px rgba(0, 0, 0, 0.45),
-        0 0 80px rgba(238, 102, 255, 0.15);
+        -8px 24px 60px rgba(0, 0, 0, 0.45),
+        0 0 80px rgba(238, 102, 255, 0.12);
       background-color: rgba(30, 12, 42, 0.85);
       background-image: var(--hero);
       background-repeat: no-repeat;
-      background-position: center right;
-      background-size: 118% auto;
+      background-position: 92% center;
+      background-size: 125% auto;
       overflow: hidden;
     }
     .visual::after {
       content: "";
       position: absolute;
       inset: 0;
-      background: linear-gradient(105deg, rgba(18, 8, 26, 0.88) 0%, rgba(18, 8, 26, 0.35) 42%, transparent 68%);
+      background: linear-gradient(100deg, rgba(18, 8, 26, 0.82) 0%, rgba(18, 8, 26, 0.22) 48%, transparent 78%);
       pointer-events: none;
     }
     @media (max-width: 900px) {
       .visual {
         background-position: center center;
-        background-size: 112% auto;
-        min-height: 320px;
+        background-size: 118% auto;
+        border: 1px solid rgba(255, 255, 160, 0.35);
       }
       .visual::after {
-        background: linear-gradient(180deg, rgba(18, 8, 26, 0.55) 0%, transparent 45%, rgba(18, 8, 26, 0.5) 100%);
+        background: linear-gradient(180deg, rgba(18, 8, 26, 0.5) 0%, transparent 42%, rgba(18, 8, 26, 0.45) 100%);
       }
     }
+    .foot-wrap {
+      max-width: var(--content-max);
+      margin: 0 auto;
+      width: 100%;
+      padding: 28px clamp(20px, 4vw, 40px) clamp(24px, 4vw, 40px);
+    }
     footer.landing-foot {
-      margin-top: auto;
-      padding-top: 32px;
       font-size: 0.75rem;
       color: rgba(255, 255, 255, 0.45);
     }
@@ -174,23 +201,29 @@
   </style>
 </head>
 <body>
-  <div class="shell">
-    <div class="brand" id="site-brand">GAME UNIVERSE</div>
-    <div class="grid">
-      <div class="copy">
-        <h2 class="tagline">First Unblooked Blooket Server</h2>
-        <p class="lead">
-          Hundreds of Free Unblocked Games, a high edge replicate, Giftcard and cash giveaways, fully written by Brendan.
-        </p>
-        <div class="actions">
-          <a class="btn btn-primary" id="btn-login" href="login.html">Login</a>
-          <a class="btn btn-ghost" id="btn-signup" href="signup.html">Sign Up</a>
-          <a class="btn btn-discord" href="https://discord.gg/buf8sesyrB" target="_blank" rel="noopener noreferrer">Discord</a>
-        </div>
-      </div>
-      <div class="visual" role="img" aria-label="Game icons hero art"></div>
+  <div class="page-root">
+    <div class="top-bar">
+      <div class="brand" id="site-brand">GAME UNIVERSE</div>
     </div>
-    <footer class="landing-foot">© Game Universe · <a href="https://gamesuniverse.org">gamesuniverse.org</a></footer>
+    <div class="split-bleed">
+      <div class="split-inner">
+        <div class="copy">
+          <h2 class="tagline">First Unblooked Blooket Server</h2>
+          <p class="lead">
+            Hundreds of Free Unblocked Games, a high edge replicate, Giftcard and cash giveaways, fully written by Brendan.
+          </p>
+          <div class="actions">
+            <a class="btn btn-primary" id="btn-login" href="login.html">Login</a>
+            <a class="btn btn-ghost" id="btn-signup" href="signup.html">Sign Up</a>
+            <a class="btn btn-discord" href="https://discord.gg/buf8sesyrB" target="_blank" rel="noopener noreferrer">Discord</a>
+          </div>
+        </div>
+        <div class="visual" role="img" aria-label="Game icons hero art"></div>
+      </div>
+    </div>
+    <div class="foot-wrap">
+      <footer class="landing-foot">© Game Universe · <a href="https://gamesuniverse.org">gamesuniverse.org</a></footer>
+    </div>
   </div>
 </body>
 </html>
