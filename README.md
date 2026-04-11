@@ -1,6 +1,7 @@
 # games-universe
 
 - **Landing page:** **`index.html`** — marketing home for **https://gamesuniverse.org**
+- **Auth pages:** **`login.html`** and **`signup.html`** — dedicated pages (then redirect to **`/dashboard/`** after success). Shared styles: **`assets/auth-pages.css`**.
 - **Full app (dashboard):** **`dashboard/index.html`** — games, shop, inventory, missions, chat, staff, etc.  
   **Public URL (no `.html`):** **`/dashboard/`** (GitHub Pages serves the folder index).
 

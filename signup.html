@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex">
+  <title>Sign Up — Game Universe</title>
+  <meta name="theme-color" content="#120818">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Titan+One&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/auth-pages.css">
+</head>
+<body>
+  <div class="auth-scene" aria-hidden="true"></div>
+  <div class="auth-wrap">
+    <div class="auth-top"></div>
+    <main class="auth-card">
+      <h1 class="auth-title">Sign Up</h1>
+      <p class="auth-sub">Game Universe</p>
+      <div id="msg" class="auth-msg" role="status"></div>
+      <form id="form" autocomplete="on" novalidate>
+        <label class="auth-label" for="username">Username</label>
+        <input class="auth-input" type="text" id="username" name="username" autocomplete="nickname" required placeholder="Username">
+        <label class="auth-label" for="email">Email</label>
+        <input class="auth-input" type="email" id="email" name="email" autocomplete="email" required placeholder="you@example.com">
+        <label class="auth-label" for="password">Password</label>
+        <input class="auth-input" type="password" id="password" name="password" autocomplete="new-password" required placeholder="Choose a password">
+        <button type="submit" class="auth-btn" id="submit">Create account</button>
+      </form>
+      <div class="auth-links">
+        <a href="login.html">Already have an account? Log in</a>
+        ·
+        <a href="index.html">Home</a>
+      </div>
+    </main>
+  </div>
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-app.js";
+    import { getAuth, createUserWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-auth.js";
+    import {
+      getFirestore,
+      doc,
+      setDoc,
+      getDocs,
+      collection,
+      query,
+      where,
+      serverTimestamp
+    } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyC49VFcW1pjHq0sCkdcps_DwUAoo4z5oaw",
+      authDomain: "blacket-65c5b.firebaseapp.com",
+      databaseURL: "https://blacket-65c5b-default-rtdb.firebaseio.com",
+      projectId: "blacket-65c5b",
+      storageBucket: "blacket-65c5b.firebasestorage.app",
+      messagingSenderId: "497023905730",
+      appId: "1:497023905730:web:a59093052a3f93a476305b",
+      measurementId: "G-XZZR5DH79B"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+    const form = document.getElementById("form");
+    const msg = document.getElementById("msg");
+    const submit = document.getElementById("submit");
+
+    const defaultAvatar = "https://t3.ftcdn.net/jpg/00/64/67/80/360_F_64678017_zUpiZFjj04cnLri7oADnyMH0XBYyQghG.jpg";
+
+    function setMsg(text, ok) {
+      msg.textContent = text || "";
+      msg.classList.toggle("ok", !!ok);
+    }
+
+    async function ensureUniqueDisplayId() {
+      for (let attempt = 0; attempt < 80; attempt++) {
+        const n = Math.floor(100000 + Math.random() * 900000);
+        const idStr = String(n);
+        const snap = await getDocs(query(collection(db, "users"), where("displayId", "==", idStr)));
+        if (snap.empty) return idStr;
+      }
+      return String(Math.floor(100000 + Math.random() * 900000));
+    }
+
+    async function saveUserProfile(uid, email, username) {
+      const avatar = defaultAvatar;
+      let coins = 0;
+      let title = "User";
+      if (email === "chonhouliu@gmail.com") { coins = 999999; title = "Owner"; }
+      const displayId = await ensureUniqueDisplayId();
+      await setDoc(doc(db, "users", uid), {
+        email,
+        username: username || email.split("@")[0],
+        avatar,
+        coins,
+        stars: 0,
+        title,
+        badges: [],
+        displayId,
+        ownedBannerIds: [],
+        createdAt: serverTimestamp()
+      }, { merge: true });
+    }
+
+    onAuthStateChanged(auth, (user) => {
+      if (user) {
+        window.location.replace("/dashboard/");
+      }
+    });
+
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const username = document.getElementById("username").value.trim();
+      const email = document.getElementById("email").value.trim();
+      const password = document.getElementById("password").value;
+      if (!username || !email || !password) {
+        setMsg("Fill in username, email, and password.");
+        return;
+      }
+      submit.disabled = true;
+      setMsg("Creating account…", true);
+      try {
+        const cred = await createUserWithEmailAndPassword(auth, email, password);
+        await saveUserProfile(cred.user.uid, email, username);
+        setMsg("Success — opening dashboard…", true);
+        window.location.replace("/dashboard/");
+      } catch (err) {
+        setMsg(err.message || "Sign up failed.");
+        submit.disabled = false;
+      }
+    });
+  </script>
+</body>
+</html>
