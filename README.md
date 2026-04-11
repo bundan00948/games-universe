@@ -22,7 +22,7 @@ GitHub Pages serves **`/dashboard/`** from the **`dashboard/index.html`** folder
 
 ### Landing hero image
 
-The marketing page uses **`assets/landing-hero.jpg`** (same origin as the site, preloaded) for fast first paint. Replace that file if you change the artwork.
+The marketing page hero uses the **Postimg** URL embedded in **`index.html`** (with a framed panel). Optional **`assets/landing-hero.jpg`** / **`landing-hero.svg`** remain for other uses; they are not required for the home hero.
 
 ## Staff: Discord pull alerts
 

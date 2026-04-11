@@ -6,7 +6,7 @@
   <meta name="description" content="First Unblooked Blooket Server — hundreds of free unblocked games, giveaways, and more on Game Universe.">
   <meta name="theme-color" content="#1a0c24">
   <title>Game Universe — First Unblooked Blooket Server</title>
-  <link rel="preload" href="assets/landing-hero.jpg" as="image">
+  <link rel="preconnect" href="https://i.postimg.cc" crossorigin>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Titan+One&display=swap" rel="stylesheet">
@@ -19,6 +19,7 @@
       --text: #ffffff;
       --muted: #e8c8f8;
       --discord: #5865f2;
+      --hero: url("https://i.postimg.cc/SK37fnxF/Screenshot-2026-04-11-at-18-25-43-removebg.png");
     }
     * { margin: 0; padding: 0; box-sizing: border-box; }
     html { color-scheme: dark; }
@@ -32,9 +33,9 @@
         linear-gradient(165deg, var(--bg) 0%, var(--bg-mid) 45%, #140a1c 100%);
     }
     .shell {
-      max-width: 1200px;
+      max-width: 1120px;
       margin: 0 auto;
-      padding: clamp(24px, 4vw, 40px) clamp(16px, 3vw, 28px) clamp(28px, 5vw, 56px);
+      padding: clamp(24px, 4vw, 40px) clamp(20px, 4vw, 40px) clamp(28px, 5vw, 56px);
       min-height: 100vh;
       display: flex;
       flex-direction: column;
@@ -54,18 +55,14 @@
     .grid {
       flex: 1;
       display: grid;
-      grid-template-columns: minmax(0, 1fr) minmax(0, 1.12fr);
-      gap: clamp(16px, 3vw, 40px);
+      grid-template-columns: 1fr 1fr;
+      gap: clamp(28px, 5vw, 64px);
       align-items: center;
       width: 100%;
     }
     @media (max-width: 900px) {
-      .grid { grid-template-columns: 1fr; gap: 28px; }
-      .hero-visual { order: -1; justify-content: center; min-height: auto; padding: 8px 0 0; }
-      .hero-art {
-        transform-origin: center center;
-        max-height: min(52vh, 420px);
-      }
+      .grid { grid-template-columns: 1fr; gap: 32px; }
+      .visual { order: -1; min-height: 300px; max-width: 100%; }
     }
     .tagline {
       font-size: clamp(1.05rem, 2.2vw, 1.35rem);
@@ -131,44 +128,40 @@
       transform: translateY(-2px);
       box-shadow: 0 10px 28px rgba(88, 101, 242, 0.45);
     }
-    /* Hero: no card frame — same-origin JPEG, scaled 50% larger from the right */
-    .hero-visual {
+    /* Hero: framed panel + remote PNG (previous setup), art slightly larger than “contain” */
+    .visual {
       position: relative;
-      display: flex;
-      justify-content: flex-end;
-      align-items: center;
-      min-height: min(72vh, 820px);
-      padding: 0;
-      margin: 0;
-      border: none;
-      border-radius: 0;
-      box-shadow: none;
-      background: none;
-      overflow: visible;
+      min-height: min(560px, 66vh);
+      border-radius: 24px;
+      padding: 10px;
+      background: linear-gradient(145deg, rgba(238, 102, 255, 0.2) 0%, rgba(44, 28, 62, 0.9) 50%, rgba(255, 255, 160, 0.08) 100%);
+      border: 1px solid rgba(255, 255, 160, 0.35);
+      box-shadow:
+        0 0 0 1px rgba(238, 102, 255, 0.2) inset,
+        0 24px 60px rgba(0, 0, 0, 0.45),
+        0 0 80px rgba(238, 102, 255, 0.15);
+      background-color: rgba(30, 12, 42, 0.85);
+      background-image: var(--hero);
+      background-repeat: no-repeat;
+      background-position: center right;
+      background-size: 118% auto;
+      overflow: hidden;
     }
-    .hero-art {
-      display: block;
-      width: auto;
-      height: auto;
-      max-height: min(78vh, 880px);
-      max-width: none;
-      transform: scale(1.5);
-      transform-origin: right center;
-      object-fit: contain;
-      pointer-events: none;
-      user-select: none;
-    }
-    .hero-visual::after {
+    .visual::after {
       content: "";
       position: absolute;
-      inset: -4% -8% -4% 28%;
-      background: linear-gradient(100deg, rgba(18, 8, 26, 0.92) 0%, rgba(18, 8, 26, 0.25) 55%, transparent 100%);
+      inset: 0;
+      background: linear-gradient(105deg, rgba(18, 8, 26, 0.88) 0%, rgba(18, 8, 26, 0.35) 42%, transparent 68%);
       pointer-events: none;
     }
     @media (max-width: 900px) {
-      .hero-visual::after {
-        inset: 0;
-        background: linear-gradient(180deg, rgba(18, 8, 26, 0.5) 0%, transparent 40%, rgba(18, 8, 26, 0.45) 100%);
+      .visual {
+        background-position: center center;
+        background-size: 112% auto;
+        min-height: 320px;
+      }
+      .visual::after {
+        background: linear-gradient(180deg, rgba(18, 8, 26, 0.55) 0%, transparent 45%, rgba(18, 8, 26, 0.5) 100%);
       }
     }
     footer.landing-foot {
@@ -195,21 +188,7 @@
           <a class="btn btn-discord" href="https://discord.gg/buf8sesyrB" target="_blank" rel="noopener noreferrer">Discord</a>
         </div>
       </div>
-      <div class="hero-visual" aria-hidden="true">
-        <picture>
-          <source srcset="assets/landing-hero.jpg" type="image/jpeg">
-          <img
-            class="hero-art"
-            src="assets/landing-hero.jpg"
-            width="1280"
-            height="875"
-            alt=""
-            decoding="async"
-            fetchpriority="high"
-            onerror="this.onerror=null;this.src='assets/landing-hero.svg';this.classList.remove('hero-art');this.style.maxHeight='min(420px,55vh)';this.style.transform='none';"
-          >
-        </picture>
-      </div>
+      <div class="visual" role="img" aria-label="Game icons hero art"></div>
     </div>
     <footer class="landing-foot">© Game Universe · <a href="https://gamesuniverse.org">gamesuniverse.org</a></footer>
   </div>
