@@ -7415,7 +7415,16 @@
     function ensureMainPageGamesDeferredObserver() {
       const mp = document.getElementById('main-page');
       const ph = document.getElementById('main-games-load-placeholder');
-      if (!mp || !ph || mainPageGamesMounted || typeof IntersectionObserver === 'undefined') return;
+      if (!mp || !ph || mainPageGamesMounted) return;
+      /* Main tab visible: mount immediately (observer root may not include off-screen placeholder). */
+      if (mp.classList.contains('active')) {
+        mountMainPageGamesContent().catch((e) => console.error('mountMainPageGamesContent', e));
+        return;
+      }
+      if (typeof IntersectionObserver === 'undefined') {
+        mountMainPageGamesContent().catch((e) => console.error('mountMainPageGamesContent', e));
+        return;
+      }
       if (mainPageGamesScrollObserver) return;
       mainPageGamesScrollObserver = new IntersectionObserver((entries) => {
         entries.forEach((en) => {
@@ -12087,15 +12096,31 @@
     }
 
     async function init() {
-      await refreshRarityOrderFromServer();
-      applyFixedSiteTheme();
-      appGamesDataCache = await getGames();
-      ensureMainPageGamesDeferredObserver();
+      /* Never block the shell on Firestore: overlay hid only after getGames() before — if reads hang, dashboard "loads forever". */
       hidePageLoading();
+      try {
+        await refreshRarityOrderFromServer();
+      } catch (e) {
+        console.warn('refreshRarityOrderFromServer', e);
+      }
+      applyFixedSiteTheme();
+      try {
+        appGamesDataCache = await getGames();
+      } catch (e) {
+        console.error('getGames init', e);
+        appGamesDataCache = { topGames: [], newGames: [], allGames: [] };
+      }
+      ensureMainPageGamesDeferredObserver();
+      if (!mainPageGamesMounted) {
+        mountMainPageGamesContent().catch((e) => console.error('mountMainPageGamesContent init', e));
+      }
     }
 
-    init().catch(() => hidePageLoading());
-    setTimeout(hidePageLoading, 12000);
+    init().catch((e) => {
+      console.error('init', e);
+      hidePageLoading();
+    });
+    setTimeout(hidePageLoading, 4000);
     // ========== Event Listeners ==========
     document.getElementById('daily-reward-claim-btn')?.addEventListener('click', () => claimDailyReward());
     document.getElementById('badge-detail-close')?.addEventListener('click', () => {

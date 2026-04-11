@@ -8,6 +8,7 @@ All notable changes to this project are documented here. The main app lives in *
 - **Landing:** hero art uses the **Postimg** URL again inside a framed panel (slightly larger `background-size`); **Discord** button to `https://discord.gg/buf8sesyrB`.
 - **Auth:** standalone **`login.html`** / **`signup.html`** with static pattern background + centered card; Firebase email auth matches dashboard config; successful auth redirects to **`/dashboard/`**. Landing **Login** / **Sign Up** link to these pages (no `?auth=` on dashboard).
 - **Dashboard:** after login with **Profile** active, main games no longer stuck loading — **`mountMainPageGamesContent()`** runs once in **`onAuthStateChanged`** when games are not mounted (IntersectionObserver could not fire for hidden main page).
+- **Dashboard shell:** **`hidePageLoading()`** runs at the **start** of **`init()`** (not after `getGames()`), with **`getGames`** / **`refreshRarityOrderFromServer`** in try/catch and a **4s** overlay failsafe — prevents full-page spinner if Firestore hangs. **`ensureMainPageGamesDeferredObserver`** mounts games immediately when **Main** tab is already active (no observer-only deadlock).
 - **Auth pages:** static grid/pattern background (no motion); auth card **vertically centered**.
 - **Landing:** hero panel **bleeds to the right edge** and is **taller / centered** in the right column; tagline **First Unblooked…** uses **Titan One** only and is **larger** (description stays Nunito).
 - **Theme:** reverted mint/Blooket-blue experiments; restored the original dark neon site palette.
