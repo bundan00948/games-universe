@@ -5,6 +5,7 @@ All notable changes to this project are documented here. The main app lives in *
 ## Unreleased
 
 - **Site structure:** `index.html` is the marketing landing page; the full single-page app lives under **`dashboard/`** (clean URL **`/dashboard/`**, no `.html`). Landing Login/Sign Up open modals via **`?auth=login`** / **`?auth=signup`**; after login the app opens on **Profile (stats)**; after signup it opens on **Main Page (games)**.
+- **Landing:** hero image served from **`assets/landing-hero.jpg`** (same-origin, preloaded) for faster load; larger edge-to-edge art; **Discord** button to `https://discord.gg/buf8sesyrB`.
 - **Theme:** reverted mint/Blooket-blue experiments; restored the original dark neon site palette.
 - **Golden Ticket:** staff-configurable blook (extra pack drop + ticket tier roll for entry value), hidden inventory section, **three** giveaways each with a **single** prize and live top-10 entry boards (`giveawayLeaderboards/{A|B|C}`). No auto winner draw.
 - Pack unbox: smaller on-screen pack scale during open animation.

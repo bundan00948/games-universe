@@ -19,6 +19,10 @@ The commit at the tip of `main` is the published version; see **Commits** on Git
 
 GitHub Pages serves **`/dashboard/`** from the **`dashboard/index.html`** folder. The repo includes **`_config.yml`** with `permalink: pretty` so extensionless URLs behave consistently with Jekyll-based Pages hosting.
 
+### Landing hero image
+
+The marketing page uses **`assets/landing-hero.jpg`** (same origin as the site, preloaded) for fast first paint. Replace that file if you change the artwork.
+
 ## Staff: Discord pull alerts
 
 Configure in the **Staff Panel → Rarity & site → Discord — special pull alerts**:
