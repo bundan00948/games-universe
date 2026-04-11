@@ -1,20 +1,23 @@
 # games-universe
 
-- **Landing page:** **`index.html`** — short intro and hero art for **https://gamesuniverse.org**
-- **Full app (dashboard):** **`dashboard.html`** — games, shop, inventory, missions, chat, staff, etc.
+- **Landing page:** **`index.html`** — marketing home for **https://gamesuniverse.org**
+- **Full app (dashboard):** **`dashboard/index.html`** — games, shop, inventory, missions, chat, staff, etc.  
+  **Public URL (no `.html`):** **`/dashboard/`** (GitHub Pages serves the folder index).
 
 ## Published site (source)
 
 - **Branch:** `main` on GitHub  
 - **Landing:** https://github.com/brendan00948/games-universe/blob/main/index.html  
-- **Dashboard app:** https://github.com/brendan00948/games-universe/blob/main/dashboard.html  
-- **Raw dashboard (copy/paste / host):** https://raw.githubusercontent.com/brendan00948/games-universe/main/dashboard.html  
+- **Dashboard app:** https://github.com/brendan00948/games-universe/blob/main/dashboard/index.html  
+- **Raw dashboard (copy/paste / host):** https://raw.githubusercontent.com/brendan00948/games-universe/main/dashboard/index.html  
 
 The commit at the tip of `main` is the published version; see **Commits** on GitHub for the exact SHA.
 
-### Hero image on the landing page
+### Legacy path
 
-Add your collage as **`assets/landing-hero.png`** in the repo (same path on the live site). Until that file exists, the page falls back to **`assets/landing-hero.svg`**.
+**`/dashboard.html`** is a tiny redirect to **`/dashboard/`** (query string preserved for `?auth=login` / `?auth=signup`).
+
+GitHub Pages serves **`/dashboard/`** from the **`dashboard/index.html`** folder. The repo includes **`_config.yml`** with `permalink: pretty` so extensionless URLs behave consistently with Jekyll-based Pages hosting.
 
 ## Staff: Discord pull alerts
 

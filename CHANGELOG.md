@@ -1,10 +1,10 @@
 # Changelog
 
-All notable changes to this project are documented here. The main app lives in **`dashboard.html`**; **`index.html`** is the public landing page for **gamesuniverse.org**.
+All notable changes to this project are documented here. The main app lives in **`dashboard/index.html`** (URL **`/dashboard/`**); **`index.html`** is the public landing page for **gamesuniverse.org**.
 
 ## Unreleased
 
-- **Site structure:** `index.html` is now a marketing landing page (title, description, hero image); the full single-page app was moved to **`dashboard.html`**.
+- **Site structure:** `index.html` is the marketing landing page; the full single-page app lives under **`dashboard/`** (clean URL **`/dashboard/`**, no `.html`). Landing Login/Sign Up open modals via **`?auth=login`** / **`?auth=signup`**; after login the app opens on **Profile (stats)**; after signup it opens on **Main Page (games)**.
 - **Theme:** reverted mint/Blooket-blue experiments; restored the original dark neon site palette.
 - **Golden Ticket:** staff-configurable blook (extra pack drop + ticket tier roll for entry value), hidden inventory section, **three** giveaways each with a **single** prize and live top-10 entry boards (`giveawayLeaderboards/{A|B|C}`). No auto winner draw.
 - Pack unbox: smaller on-screen pack scale during open animation.
