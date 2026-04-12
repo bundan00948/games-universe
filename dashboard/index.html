@@ -6635,6 +6635,8 @@
 
   <!-- Firebase SDK -->
   <script type="module">
+    import { firebaseConfig } from '../assets/firebase-config.js';
+    import { friendlyFirebaseMessage } from '../assets/firebase-errors.js';
     // Import required Firebase modules
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-app.js";
     import { getAnalytics, isSupported } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-analytics.js";
@@ -6679,18 +6681,6 @@
       uploadBytes,     
       getDownloadURL 
     } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-storage.js";
-
-    // Firebase config
-    const firebaseConfig = {
-      apiKey: "AIzaSyC49VFcW1pjHq0sCkdcps_DwUAoo4z5oaw",         
-      authDomain: "blacket-65c5b.firebaseapp.com",         
-      databaseURL: "https://blacket-65c5b-default-rtdb.firebaseio.com",         
-      projectId: "blacket-65c5b",         
-      storageBucket: "blacket-65c5b.firebasestorage.app",         
-      messagingSenderId: "497023905730",         
-      appId: "1:497023905730:web:a59093052a3f93a476305b",         
-      measurementId: "G-XZZR5DH79B"
-    };
 
     // Initialize Firebase
     const app = initializeApp(firebaseConfig);
@@ -6773,74 +6763,6 @@
       };
       /* Defer one tick so IndexedDB-restored sessions are not mistaken for logged-out. */
       setTimeout(go, 80);
-    }
-
-    /** Default webhook if not set in Staff → Discord or Firestore. */
-    const SPECIAL_PULL_DISCORD_WEBHOOK = 'https://discord.com/api/webhooks/1491040161155256351/8huNJrIDwJpsfVi30xaCisPELzWTh3-SbrK4de92bKkhSVQTayEHFZpyg8yHxMqcOXEQ';
-    let discordPullSettingsCache = null;
-
-    function invalidateDiscordPullSettings() {
-      discordPullSettingsCache = null;
-    }
-
-    async function getDiscordPullSettings() {
-      if (discordPullSettingsCache) return discordPullSettingsCache;
-      const fallback = {
-        enabled: true,
-        webhookUrl: SPECIAL_PULL_DISCORD_WEBHOOK || '',
-        footerText: 'Game Universe · special pull',
-        minRarityIdx: null,
-        maxChancePct: null,
-        inviteUrl: ''
-      };
-      try {
-        const s = await getDoc(doc(db, 'siteConfig', 'settings'));
-        if (!s.exists()) {
-          discordPullSettingsCache = fallback;
-          return discordPullSettingsCache;
-        }
-        const d = s.data();
-        const urlRaw = String(d.discordAnnounceWebhookUrl || d.discordSpecialPullWebhookUrl || '').trim();
-        let minIdx = null;
-        if (d.discordAnnounceMinRarityIdx != null && String(d.discordAnnounceMinRarityIdx).trim() !== '') {
-          const n = parseInt(d.discordAnnounceMinRarityIdx, 10);
-          minIdx = Number.isFinite(n) ? Math.max(0, n) : null;
-        }
-        let maxCh = null;
-        if (d.discordAnnounceMaxChancePct != null && String(d.discordAnnounceMaxChancePct).trim() !== '') {
-          const x = Number(d.discordAnnounceMaxChancePct);
-          maxCh = Number.isFinite(x) ? x : null;
-        }
-        discordPullSettingsCache = {
-          enabled: d.discordAnnounceEnabled !== false && d.discordAnnounceEnabled !== 'false',
-          webhookUrl: urlRaw || SPECIAL_PULL_DISCORD_WEBHOOK || '',
-          footerText: (String(d.discordAnnounceFooterText || 'Game Universe · special pull').trim() || 'Game Universe · special pull').slice(0, 200),
-          minRarityIdx: minIdx,
-          maxChancePct: maxCh,
-          inviteUrl: String(d.discordInviteUrl || '').trim()
-        };
-      } catch (_) {
-        discordPullSettingsCache = fallback;
-      }
-      return discordPullSettingsCache;
-    }
-
-    async function shouldDiscordAnnounceSpecialPull(rarity, chancePct, catEntry) {
-      const st = await getDiscordPullSettings();
-      if (!st || !st.enabled || !st.webhookUrl) return false;
-      if (catEntry && catEntry.discordAnnounce) return true;
-      const rDef = getRarityDef(rarity);
-      if (rDef && rDef.discordAnnounce) return true;
-      const ri = raritySortIndex(rarity);
-      if (st.minRarityIdx != null && ri >= st.minRarityIdx) return true;
-      if (st.maxChancePct != null && chancePct != null && Number.isFinite(Number(chancePct)) && Number(chancePct) <= st.maxChancePct) return true;
-      return false;
-    }
-
-    function discordEmbedColorFromHex(hex) {
-      const h = String(hex || '').replace(/^#/, '');
-      if (!/^[0-9a-fA-F]{6}$/.test(h)) return 0xffffa0;
-      return parseInt(h, 16);
     }
 
     function findPackCatalogItemByName(packDoc, itemName) {
@@ -7241,7 +7163,7 @@
         showNotification(`Entered giveaway ${giveawayId} (+${added} entries)`, 'success');
         loadInventory(currentUser.uid);
       } catch (e) {
-        showNotification(e.message || 'Could not enter giveaway', 'error');
+        showNotification(friendlyFirebaseMessage(e) || 'Could not enter giveaway', 'error');
       }
     }
     const DEFAULT_RARITY_ORDER = ['common','uncommon','rare','epic','legendary','mythical','chroma'];
@@ -7578,7 +7500,6 @@
       const avatar = avatarUrl || defaultAvatar;
       let coins = 0;
       let title = "User";
-      if (email === "chonhouliu@gmail.com") { coins = 999999; title = "Owner"; }
       const displayId = await ensureUniqueDisplayId();
       await setDoc(doc(db, "users", uid), {
         email,
@@ -7853,9 +7774,6 @@
             if (!d0.displayId || String(d0.displayId).length !== 6) patch.displayId = await ensureUniqueDisplayId();
             if (!Array.isArray(d0.ownedBannerIds)) patch.ownedBannerIds = [];
             if (Object.keys(patch).length) await updateDoc(doc(db, "users", user.uid), patch);
-            if (user.email === "chonhouliu@gmail.com") {
-              await updateDoc(doc(db, "users", user.uid), { coins: 999999, title: "Owner" });
-            }
           }
           const banCheck = await getDoc(doc(db, "users", user.uid));
           if (banCheck.exists()) {
@@ -7918,7 +7836,7 @@
           }
         } catch (err) {
           console.error('onAuthStateChanged signed-in branch', err);
-          showNotification((err && err.message) ? err.message : 'Could not load your account. Check connection or try again.', 'error');
+          showNotification(friendlyFirebaseMessage(err) || 'Could not load your account. Check connection or try again.', 'error');
         } finally {
           hidePageLoading();
         }
@@ -7965,7 +7883,7 @@
           const storageRef = ref(storage, `avatars/${Date.now()}_${avatarFile.name}`);
           const snapshot = await uploadBytes(storageRef, avatarFile);
           avatarUrl = await getDownloadURL(snapshot.ref);
-        } catch (error) { showNotification("Error uploading avatar: " + error.message, "error"); return; }
+        } catch (error) { showNotification("Error uploading avatar: " + friendlyFirebaseMessage(error), "error"); return; }
       }
       if (!username || !email || !password) { showNotification("Please fill all required fields", "error"); return; }
       try {
@@ -7976,7 +7894,7 @@
         showNotification("Account created successfully!", "success");
       } catch (error) {
         goToMainAfterAuth = false;
-        showNotification(error.message, "error");
+        showNotification(friendlyFirebaseMessage(error), "error");
       }
     });
 
@@ -7991,7 +7909,7 @@
         showNotification("Login successful!", "success");
       } catch (error) {
         redirectToProfileAfterAuth = false;
-        showNotification(error.message, "error");
+        showNotification(friendlyFirebaseMessage(error), "error");
       }
     });
 
@@ -8280,7 +8198,7 @@
           const snapshot = await uploadBytes(storageRef, file);
           bannerUrl = await getDownloadURL(snapshot.ref);
         } catch (err) {
-          if (msgEl) { msgEl.textContent = 'Banner upload failed: ' + err.message; msgEl.style.color = '#FF3D6C'; }
+          if (msgEl) { msgEl.textContent = 'Banner upload failed: ' + friendlyFirebaseMessage(err); msgEl.style.color = '#FF3D6C'; }
           return;
         }
       }
@@ -8301,7 +8219,7 @@
         if (msgEl) { msgEl.textContent = 'Thanks! Your suggestion was sent.'; msgEl.style.color = 'var(--neon-green)'; }
         e.target.reset();
       } catch (err) {
-        if (msgEl) { msgEl.textContent = 'Could not submit: ' + err.message; msgEl.style.color = '#FF3D6C'; }
+        if (msgEl) { msgEl.textContent = 'Could not submit: ' + friendlyFirebaseMessage(err); msgEl.style.color = '#FF3D6C'; }
       }
     });
 
@@ -8363,7 +8281,10 @@
       refreshStarDisplayBadges(data.badges || []);
       document.getElementById(ids.starsVal).textContent = data.stars || 0;
 
-      const playsSnap = await getDocs(query(collection(db, "plays"), where("userId", "==", userId)));
+      let playsSnap = { size: 0, forEach: () => {} };
+      try {
+        playsSnap = await getDocs(query(collection(db, "plays"), where("userId", "==", userId)));
+      } catch (_) {}
       document.getElementById(ids.playCount).textContent = playsSnap.size;
       let totalSec = 0;
       playsSnap.forEach(d => { totalSec += d.data().duration || 300; });
@@ -8374,7 +8295,10 @@
       const friendsSnap = await getDocs(query(collection(db, "friends"), where("userId", "==", userId)));
       document.getElementById(ids.friendCount).textContent = friendsSnap.size;
 
-      const blooksSnap = await getDocs(query(collection(db, "inventory"), where("userId", "==", userId)));
+      let blooksSnap = { docs: [], forEach: () => {} };
+      try {
+        blooksSnap = await getDocs(query(collection(db, "inventory"), where("userId", "==", userId)));
+      } catch (_) {}
       const ownedNames = new Set(blooksSnap.docs.map(d => (d.data().itemName || '').trim()).filter(Boolean));
       const blookUnique = ownedNames.size;
       const catalogUniqueTotal = await getBlookCatalogUniqueCount();
@@ -8646,7 +8570,7 @@
         updateMissionProgress('spending', bannerPack.price);
         loadUserBalance(currentUser.uid);
         showNotification('Banner unlocked! Equip it from your profile banner.', 'success');
-      } catch (e) { showNotification('Error: ' + e.message, 'error'); }
+      } catch (e) { showNotification('Error: ' + friendlyFirebaseMessage(e), 'error'); }
     }
 
     function showChanceModal(pack) {
@@ -8689,7 +8613,7 @@
         loadUserBalance(currentUser.uid);
         await openPack(pack, currentUser.uid);
       } catch (e) {
-        showNotification("Error purchasing pack: " + e.message, "error");
+        showNotification("Error purchasing pack: " + friendlyFirebaseMessage(e), "error");
         packOpeningBusy = false;
         shopPackPurchaseLock = false;
       }
@@ -8800,49 +8724,6 @@
       const s = String(r || '').trim();
       if (!s) return '—';
       return s.charAt(0).toUpperCase() + s.slice(1).toLowerCase();
-    }
-
-    async function announceSpecialBlookPullToDiscord(ctx) {
-      const st = await getDiscordPullSettings();
-      const webhookUrl = st.webhookUrl;
-      if (!st.enabled || !webhookUrl) return;
-      const rarityKey = (ctx.rarity || '').toString().trim();
-      const rarityLower = rarityKey ? rarityKey.toLowerCase() : 'unknown';
-      const accentHex = getRarityColor(rarityKey);
-      const thumbRaw = (ctx.imageUrl || '').trim();
-      const thumb = /^https?:\/\//i.test(thumbRaw) ? mediaThumbUrl(thumbRaw, 512, 82) : null;
-      const chanceStr = ctx.chancePct != null && Number.isFinite(Number(ctx.chancePct))
-        ? `${Number(ctx.chancePct)}%`
-        : '—';
-      const blookTitle = (ctx.blookName || 'Blook').trim();
-      const who = (ctx.username || 'player').trim() || 'player';
-      const starsLine = ctx.starsGained != null && ctx.starsGained !== '' ? String(ctx.starsGained) : '—';
-      const embed = {
-        color: discordEmbedColorFromHex(accentHex),
-        title: blookTitle,
-        description: [
-          `@${who} pulled a ${rarityLower} ${blookTitle} blook!`,
-          '',
-          `**Stars:** ⭐ ${starsLine}`,
-          `**Rarity:** ${capitalizeRarityLabel(rarityKey)}`,
-          `**Chance:** ${chanceStr}`
-        ].join('\n')
-      };
-      if (thumb) embed.thumbnail = { url: thumb };
-      try {
-        const res = await fetch(webhookUrl, {
-          method: 'POST',
-          mode: 'cors',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ embeds: [embed] })
-        });
-        if (!res.ok) {
-          const errBody = await res.text().catch(() => '');
-          console.warn('Discord webhook (special pull) HTTP', res.status, errBody.slice(0, 200));
-        }
-      } catch (e) {
-        console.warn('Discord webhook (special pull) failed:', e);
-      }
     }
 
     /** Pack reveal: rarity label uses admin gradient on text when configured (blook name stays plain). */
@@ -9090,7 +8971,7 @@
         if (inventoryItems.length) renderInventory();
         showNotification('Rarity style removed', 'success');
       } catch (e) {
-        showNotification('Delete failed: ' + e.message, 'error');
+        showNotification('Delete failed: ' + friendlyFirebaseMessage(e), 'error');
       }
     }
 
@@ -9172,7 +9053,7 @@
         document.getElementById('staff-rarity-def-modal').style.display = 'none';
         showNotification('Rarity style saved', 'success');
       } catch (e) {
-        showNotification('Save failed: ' + e.message, 'error');
+        showNotification('Save failed: ' + friendlyFirebaseMessage(e), 'error');
       }
     }
 
@@ -9187,7 +9068,11 @@
         const sEl = document.getElementById('staff-daily-reward-stars');
         if (cEl) cEl.value = dr.coins != null ? dr.coins : 50;
         if (sEl) sEl.value = dr.stars != null ? dr.stars : 10;
-        const wh = String(d.discordAnnounceWebhookUrl || d.discordSpecialPullWebhookUrl || SPECIAL_PULL_DISCORD_WEBHOOK || '').trim();
+        let wh = '';
+        try {
+          const sec = await getDoc(doc(db, 'staffSecrets', 'discordBot'));
+          if (sec.exists()) wh = String(sec.data().webhookUrl || '').trim();
+        } catch (_) {}
         const enEl = document.getElementById('staff-discord-enabled');
         if (enEl) enEl.checked = d.discordAnnounceEnabled !== false && d.discordAnnounceEnabled !== 'false';
         const whEl = document.getElementById('staff-discord-webhook-url');
@@ -9203,7 +9088,6 @@
         const stEl = document.getElementById('staff-discord-save-status');
         if (stEl) stEl.textContent = '';
       } catch (e) {}
-      invalidateDiscordPullSettings();
       await loadStaffGoldenTicketPanel();
     }
 
@@ -9251,7 +9135,7 @@
         }
         renderStaffStarBadgeRulesList();
       } catch (e) {
-        if (status) status.textContent = 'Could not load: ' + e.message;
+        if (status) status.textContent = 'Could not load: ' + friendlyFirebaseMessage(e);
       }
     }
 
@@ -9325,9 +9209,9 @@
         refreshDailyRewardUI(uid);
         syncStarBadgesForUser(uid);
       } catch (e) {
-        if (e.message === 'already') showNotification('Already claimed today', 'error');
-        else if (e.message === 'nouser') showNotification('User not found', 'error');
-        else showNotification('Could not claim: ' + (e.message || 'error'), 'error');
+        if (e && e.message === 'already') showNotification('Already claimed today', 'error');
+        else if (e && e.message === 'nouser') showNotification('User not found', 'error');
+        else showNotification('Could not claim: ' + friendlyFirebaseMessage(e), 'error');
       }
     }
 
@@ -9647,24 +9531,10 @@
               const packDocCached = (inventoryCatalogCache || []).find(p => p.id === currentGiftCard.packId) || null;
               const catEntry = findPackCatalogItemByName(packDocCached, currentGiftCard.name);
               const chanceVal = catEntry && catEntry.chance != null ? catEntry.chance : currentGiftCard.chance;
-              const announceOk = await shouldDiscordAnnounceSpecialPull(currentGiftCard.rarity, chanceVal, catEntry);
-              if (announceOk) {
-                const uname = (userNameSpan && userNameSpan.textContent) ? userNameSpan.textContent.trim() : (currentUser.displayName || currentUser.email || '');
-                announceSpecialBlookPullToDiscord({
-                  blookName: currentGiftCard.name,
-                  rarity: currentGiftCard.rarity,
-                  packName: currentGiftCard.packName,
-                  starsGained: currentGiftCard.starsGained,
-                  chancePct: chanceVal,
-                  imageUrl: currentGiftCard.imageUrl,
-                  username: uname,
-                  userId: currentUser.uid
-                });
-              }
               closePackOpeningModal();
               showNotification(`You received: ${currentGiftCard.name}!`, 'success');
             } catch (err) {
-              showNotification('Error collecting item: ' + (err.message || 'error'), 'error');
+              showNotification('Error collecting item: ' + friendlyFirebaseMessage(err), 'error');
               closePackOpeningModal();
             }
           };
@@ -9974,7 +9844,7 @@
         if (ibm) ibm.style.display = 'none';
         clearInvBlookDetailPanel();
       } catch (e) {
-        showNotification('Could not sell: ' + (e.message || 'error'), 'error');
+        showNotification('Could not sell: ' + (friendlyFirebaseMessage(e) || 'error'), 'error');
       }
     }
 
@@ -10137,7 +10007,7 @@
           const snapshot = await uploadBytes(storageRef, imgFile);
           imageUrl = await getDownloadURL(snapshot.ref);
         } catch (err) {
-          showNotification('Blook image upload failed: ' + (err.message || 'error'), 'error');
+          showNotification('Blook image upload failed: ' + friendlyFirebaseMessage(err), 'error');
           return;
         }
       }
@@ -10172,7 +10042,7 @@
               loadStaffPacks();
               showNotification('Blook saved', 'success');
             } catch (e) {
-              showNotification('Could not save pack: ' + (e.message || 'error'), 'error');
+              showNotification('Could not save pack: ' + (friendlyFirebaseMessage(e) || 'error'), 'error');
               return;
             }
           }
@@ -10183,7 +10053,7 @@
             try {
               await persistStaffPackItemsFromEditor(sourcePackId, packBuilderItems);
             } catch (e) {
-              showNotification('Could not update source pack: ' + (e.message || 'error'), 'error');
+              showNotification('Could not update source pack: ' + (friendlyFirebaseMessage(e) || 'error'), 'error');
               return;
             }
           }
@@ -10450,7 +10320,8 @@
         showNotification('Purchase complete! Check your inventory.', 'success');
         loadUserBalance(currentUser.uid);
       } catch (e) {
-        showNotification(e.message || 'Could not complete purchase', 'error');
+        const msg = (e && e.code) ? friendlyFirebaseMessage(e) : (e && e.message ? String(e.message) : 'Could not complete purchase');
+        showNotification(msg, 'error');
       }
     }
 
@@ -10481,7 +10352,8 @@
         });
         showNotification('Listing cancelled. Blook returned to inventory.', 'success');
       } catch (e) {
-        showNotification(e.message || 'Could not cancel listing', 'error');
+        const msg = (e && e.code) ? friendlyFirebaseMessage(e) : (e && e.message ? String(e.message) : 'Could not cancel listing');
+        showNotification(msg, 'error');
       }
     }
 
@@ -10565,7 +10437,7 @@
         invBlookDetailContext = null;
         clearInvBlookDetailPanel();
       } catch (e) {
-        showNotification('Could not list: ' + (e.message || 'error'), 'error');
+        showNotification('Could not list: ' + (friendlyFirebaseMessage(e) || 'error'), 'error');
       }
     }
 
@@ -10946,7 +10818,7 @@
         renderInventory();
       }, (error) => {
         console.error("Inventory listener error: ", error);
-        inventoryContainer.innerHTML = `<p class="error-message">Error loading inventory: ${error.message}</p>`;
+        inventoryContainer.innerHTML = `<p class="error-message">Error loading inventory: ${friendlyFirebaseMessage(error)}</p>`;
       });
     }
 
@@ -10956,7 +10828,7 @@
         // For now, just delete the item when used
         await deleteDoc(doc(db, "inventory", item.id));
         showNotification(`Used item: ${item.name}!`, "success");
-      } catch(e) { showNotification("Error using item: " + e.message, "error"); }
+      } catch(e) { showNotification("Error using item: " + friendlyFirebaseMessage(e), "error"); }
     }
 
     let missionsListUnsub = null;
@@ -11098,9 +10970,9 @@
         loadUserBalance(userId);
         syncStarBadgesForUser(userId);
       } catch(e) {
-        if (e.message === 'already') showNotification('Reward already claimed', 'error');
-        else if (e.message === 'notdone') showNotification('Mission not complete yet', 'error');
-        else showNotification("Error claiming reward: " + e.message, "error");
+        if (e && e.message === 'already') showNotification('Reward already claimed', 'error');
+        else if (e && e.message === 'notdone') showNotification('Mission not complete yet', 'error');
+        else showNotification("Error claiming reward: " + friendlyFirebaseMessage(e), "error");
       }
     }
 
@@ -11671,14 +11543,14 @@
         showNotification('You are now friends', 'success');
         loadFriends(currentUser.uid);
         updateStats(currentUser.uid);
-      } catch (e) { showNotification('Could not accept: ' + e.message, 'error'); }
+      } catch (e) { showNotification('Could not accept: ' + friendlyFirebaseMessage(e), 'error'); }
     }
 
     async function declineFriendRequest(reqId) {
       try {
         await updateDoc(doc(db, 'friendRequests', reqId), { status: 'declined', respondedAt: serverTimestamp() });
         loadFriends(currentUser.uid);
-      } catch (e) { showNotification(e.message, 'error'); }
+      } catch (e) { showNotification(friendlyFirebaseMessage(e), 'error'); }
     }
 
     // ===== Navigate to user profile page (full page, not popup) =====
@@ -11779,7 +11651,7 @@
         if (recipientId === currentUser.uid) {
           loadUserBalance(currentUser.uid);
         }
-      } catch(e) { showNotification("Error sending gift: " + e.message, "error"); }
+      } catch(e) { showNotification("Error sending gift: " + friendlyFirebaseMessage(e), "error"); }
     }
 
     // Send gift button (removed with old modal - kept as no-op)
@@ -11915,7 +11787,7 @@
             const avatarUrl = await getDownloadURL(snapshot.ref);
             updates.avatar = avatarUrl;
           } catch (error) {
-            showNotification("Error uploading avatar: " + error.message, "error");
+            showNotification("Error uploading avatar: " + friendlyFirebaseMessage(error), "error");
             return;
           }
         }
@@ -11929,7 +11801,7 @@
           showNotification("No changes to save", "info");
         }
       } catch (error) {
-        showNotification("Error updating settings: " + error.message, "error");
+        showNotification("Error updating settings: " + friendlyFirebaseMessage(error), "error");
       }
     });
 
@@ -12804,7 +12676,7 @@
             const storageRef = ref(storage, `games/covers/${Date.now()}_${imgFile.name}`);
             const snapshot = await uploadBytes(storageRef, imgFile);
             imageUrl = await getDownloadURL(snapshot.ref);
-          } catch(err) { showNotification('Image upload failed: '+err.message,'error'); return; }
+          } catch(err) { showNotification('Image upload failed: '+friendlyFirebaseMessage(err),'error'); return; }
         }
         if (!imageUrl) { showNotification('Add a cover image URL or upload a file','error'); return; }
         const gameData={title:document.getElementById('staff-game-title').value,description:document.getElementById('staff-game-desc').value,image:imageUrl,url:document.getElementById('staff-game-url').value,rating:parseFloat(document.getElementById('staff-game-rating').value),multiplayer:document.getElementById('staff-game-multi').value==='true',tags:tagsArr,updatedAt:serverTimestamp()};
@@ -12838,7 +12710,7 @@
             loadStaffPacks();
             showNotification('Blook removed from pack', 'success');
           } catch (e) {
-            showNotification('Could not save pack: ' + (e.message || 'error'), 'error');
+            showNotification('Could not save pack: ' + (friendlyFirebaseMessage(e) || 'error'), 'error');
           }
         }
         document.getElementById('staff-blook-editor-modal').style.display = 'none';
@@ -12900,7 +12772,7 @@
             const storageRef = ref(storage, `packs/bg/${Date.now()}_${bgFile.name}`);
             const snapshot = await uploadBytes(storageRef, bgFile);
             bg = await getDownloadURL(snapshot.ref);
-          } catch(err) { showNotification('Background upload failed: '+err.message,'error'); return; }
+          } catch(err) { showNotification('Background upload failed: '+friendlyFirebaseMessage(err),'error'); return; }
         }
         const innerHex = document.getElementById('staff-pack-color-inner')?.value || '#c8c8c8';
         const outerHex = document.getElementById('staff-pack-color-outer')?.value || '#6e6e6e';
@@ -12938,7 +12810,7 @@
             const storageRef = ref(storage, `shop/banners/${Date.now()}_${f.name}`);
             const snapshot = await uploadBytes(storageRef, f);
             url = await getDownloadURL(snapshot.ref);
-          } catch(err) { showNotification('Upload failed: '+err.message,'error'); return; }
+          } catch(err) { showNotification('Upload failed: '+friendlyFirebaseMessage(err),'error'); return; }
         }
         if (!url) { showNotification('Add image URL or upload','error'); return; }
         const name = document.getElementById('staff-banner-shop-name').value.trim();
@@ -12988,7 +12860,7 @@
           }, { merge: true });
           if (currentUser) refreshDailyRewardUI(currentUser.uid);
           showNotification('Daily reward amounts saved', 'success');
-        } catch (e) { showNotification('Save failed: ' + e.message, 'error'); }
+        } catch (e) { showNotification('Save failed: ' + friendlyFirebaseMessage(e), 'error'); }
       });
 
       document.getElementById('staff-gt-save')?.addEventListener('click', async () => {
@@ -13028,7 +12900,7 @@
           if (inventoryCatalogLoaded) renderInventory();
         } catch (e) {
           if (statusEl) statusEl.textContent = '';
-          showNotification('Save failed: ' + e.message, 'error');
+          showNotification('Save failed: ' + friendlyFirebaseMessage(e), 'error');
         }
       });
 
@@ -13041,34 +12913,34 @@
         const minStr = document.getElementById('staff-discord-min-rarity-idx')?.value.trim() || '';
         const maxStr = document.getElementById('staff-discord-max-chance')?.value.trim() || '';
         const footer = (document.getElementById('staff-discord-footer')?.value.trim() || 'Game Universe · special pull').slice(0, 200);
-        const payload = {
-          discordAnnounceEnabled: enabled,
-          discordAnnounceWebhookUrl: url,
-          discordSpecialPullWebhookUrl: url,
-          discordInviteUrl: invite,
-          discordAnnounceFooterText: footer,
-          updatedAt: serverTimestamp()
-        };
-        if (minStr === '') payload.discordAnnounceMinRarityIdx = deleteField();
-        else payload.discordAnnounceMinRarityIdx = Math.max(0, parseInt(minStr, 10) || 0);
-        if (maxStr === '') payload.discordAnnounceMaxChancePct = deleteField();
-        else {
+        let maxChanceField = deleteField();
+        if (maxStr !== '') {
           const x = Number(maxStr);
           if (!Number.isFinite(x)) {
             if (statusEl) statusEl.textContent = '';
             showNotification('Max chance must be a number', 'error');
             return;
           }
-          payload.discordAnnounceMaxChancePct = x;
+          maxChanceField = x;
         }
+        const minRarityField = minStr === '' ? deleteField() : Math.max(0, parseInt(minStr, 10) || 0);
         try {
-          await setDoc(doc(db, 'siteConfig', 'settings'), payload, { merge: true });
-          invalidateDiscordPullSettings();
+          await setDoc(doc(db, 'siteConfig', 'settings'), {
+            discordAnnounceEnabled: enabled,
+            discordInviteUrl: invite,
+            discordAnnounceFooterText: footer,
+            discordAnnounceMinRarityIdx: minRarityField,
+            discordAnnounceMaxChancePct: maxChanceField,
+            discordAnnounceWebhookUrl: deleteField(),
+            discordSpecialPullWebhookUrl: deleteField(),
+            updatedAt: serverTimestamp()
+          }, { merge: true });
+          await setDoc(doc(db, 'staffSecrets', 'discordBot'), { webhookUrl: url, updatedAt: serverTimestamp() }, { merge: true });
           if (statusEl) statusEl.textContent = 'Saved.';
           showNotification('Discord settings saved', 'success');
         } catch (e) {
           if (statusEl) statusEl.textContent = '';
-          showNotification('Save failed: ' + e.message, 'error');
+          showNotification('Save failed: ' + friendlyFirebaseMessage(e), 'error');
         }
       });
       document.getElementById('staff-rarity-def-add')?.addEventListener('click', () => openStaffRarityDefModal('add'));
@@ -13104,7 +12976,7 @@
             const storageRef = ref(storage, `profile-banners/${uid}_${Date.now()}_${bannerFile.name}`);
             const snapshot = await uploadBytes(storageRef, bannerFile);
             bannerVal = await getDownloadURL(snapshot.ref);
-          } catch (err) { showNotification('Banner upload failed: '+err.message,'error'); return; }
+          } catch (err) { showNotification('Banner upload failed: '+friendlyFirebaseMessage(err),'error'); return; }
         }
         if (bannerVal) updates.banner = bannerVal;
         else if (!bannerFile && bannerUrlField === '' && staffEditUserInitialBanner) updates.banner = null;
@@ -13160,7 +13032,7 @@
           openStaffEditUser(uid);
           showNotification(`Granted 1× ${row.name} to user`, 'success');
         } catch (e) {
-          showNotification('Could not grant blook: ' + (e.message || 'error'), 'error');
+          showNotification('Could not grant blook: ' + (friendlyFirebaseMessage(e) || 'error'), 'error');
         }
       });
 
@@ -13196,7 +13068,7 @@
             const storageRef = ref(storage, `badges/icons/${Date.now()}_${iconFile.name}`);
             const snapshot = await uploadBytes(storageRef, iconFile);
             icon = await getDownloadURL(snapshot.ref);
-          } catch(err) { showNotification('Icon upload failed: '+err.message,'error'); return; }
+          } catch(err) { showNotification('Icon upload failed: '+friendlyFirebaseMessage(err),'error'); return; }
         }
         const isFa = /\bfa[srb]?\s+fa-/.test(icon) || /^fa[srb]?\s/.test(icon) || icon.includes('fa-');
         if (!iconFile && !icon) { showNotification('Set icon URL or upload an image','error'); return; }
@@ -13338,7 +13210,7 @@
           if (status) status.textContent = 'Saved. Use “Re-apply to all users” if you changed thresholds.';
           showNotification('Star badge rules saved', 'success');
         } catch (e) {
-          showNotification('Save failed: ' + e.message, 'error');
+          showNotification('Save failed: ' + friendlyFirebaseMessage(e), 'error');
         }
       });
       document.getElementById('staff-star-badge-resync-all')?.addEventListener('click', async () => {
@@ -13362,8 +13234,8 @@
           if (status) status.textContent = `Done. Updated ${n} users.`;
           showNotification('Star badges re-applied for all users', 'success');
         } catch (e) {
-          if (status) status.textContent = 'Error: ' + e.message;
-          showNotification('Re-apply failed: ' + e.message, 'error');
+          if (status) status.textContent = 'Error: ' + friendlyFirebaseMessage(e);
+          showNotification('Re-apply failed: ' + friendlyFirebaseMessage(e), 'error');
         }
       });
 
@@ -13432,13 +13304,13 @@
       try {
         const url = await uploadChatImageFile(f);
         if (url) await sendGlobalChatWithImage(url, globalChatInput.value.trim());
-      } catch (err) { showNotification('Image upload failed: ' + (err.message || 'error'), 'error'); }
+      } catch (err) { showNotification('Image upload failed: ' + friendlyFirebaseMessage(err), 'error'); }
     });
     document.getElementById('global-chat-link-btn')?.addEventListener('click', async () => {
       const url = promptChatImageUrl();
       if (!url || !currentUser) return;
       if (await isUserMuted()) return;
-      try { await sendGlobalChatWithImage(url, globalChatInput.value.trim()); } catch (err) { showNotification(err.message || 'Send failed', 'error'); }
+      try { await sendGlobalChatWithImage(url, globalChatInput.value.trim()); } catch (err) { showNotification(friendlyFirebaseMessage(err), 'error'); }
     });
 
     document.getElementById('friend-chat-attach-btn')?.addEventListener('click', () => document.getElementById('friend-chat-file')?.click());
@@ -13450,13 +13322,13 @@
       try {
         const url = await uploadChatImageFile(f);
         if (url) await sendFriendChatWithImage(url, friendChatInput.value.trim());
-      } catch (err) { showNotification('Image upload failed: ' + (err.message || 'error'), 'error'); }
+      } catch (err) { showNotification('Image upload failed: ' + friendlyFirebaseMessage(err), 'error'); }
     });
     document.getElementById('friend-chat-link-btn')?.addEventListener('click', async () => {
       const url = promptChatImageUrl();
       if (!url || !currentUser || !selectedFriend) return;
       if (await isUserMuted()) return;
-      try { await sendFriendChatWithImage(url, friendChatInput.value.trim()); } catch (err) { showNotification(err.message || 'Send failed', 'error'); }
+      try { await sendFriendChatWithImage(url, friendChatInput.value.trim()); } catch (err) { showNotification(friendlyFirebaseMessage(err), 'error'); }
     });
     addFriendBtn.addEventListener('click', addFriend);
 
@@ -13482,7 +13354,7 @@
         await sendGiftToFriend(recipientId, currentCard.id, currentCard);
         if (sendCardModal) sendCardModal.style.display = 'none';
         currentCard = null;
-      } catch (e) { showNotification('Send failed: ' + (e.message || 'error'), 'error'); }
+      } catch (e) { showNotification('Send failed: ' + (friendlyFirebaseMessage(e) || 'error'), 'error'); }
     });
 
     // Close modals when clicking outside

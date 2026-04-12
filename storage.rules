@@ -1,0 +1,72 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    function authed() {
+      return request.auth != null;
+    }
+    function isImage() {
+      return request.resource.contentType.matches('image/.*');
+    }
+    function underMaxMb(n) {
+      return request.resource.size < n * 1024 * 1024;
+    }
+
+    match /avatars/{userId}/{allPaths=**} {
+      allow read: if authed();
+      allow write: if authed()
+        && request.auth.uid == userId
+        && isImage()
+        && underMaxMb(8);
+    }
+
+    match /chatImages/{name} {
+      allow read: if authed();
+      allow write: if authed()
+        && name.matches('^' + request.auth.uid + '_.*')
+        && isImage()
+        && underMaxMb(6);
+    }
+
+    match /suggestions/banners/{allPaths=**} {
+      allow read: if authed();
+      allow write: if authed() && isImage() && underMaxMb(10);
+    }
+
+    match /packs/blooks/{allPaths=**} {
+      allow read: if authed();
+      allow write: if authed() && isImage() && underMaxMb(10);
+    }
+
+    match /packs/bg/{allPaths=**} {
+      allow read: if authed();
+      allow write: if authed() && isImage() && underMaxMb(12);
+    }
+
+    match /shop/banners/{allPaths=**} {
+      allow read: if authed();
+      allow write: if authed() && isImage() && underMaxMb(12);
+    }
+
+    match /games/covers/{allPaths=**} {
+      allow read: if authed();
+      allow write: if authed() && isImage() && underMaxMb(8);
+    }
+
+    match /profile-banners/{name} {
+      allow read: if authed();
+      allow write: if authed()
+        && name.matches('^' + request.auth.uid + '_.*')
+        && isImage()
+        && underMaxMb(10);
+    }
+
+    match /badges/icons/{allPaths=**} {
+      allow read: if authed();
+      allow write: if authed() && isImage() && underMaxMb(4);
+    }
+
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}

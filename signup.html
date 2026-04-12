@@ -35,6 +35,8 @@
     </main>
   </div>
   <script type="module">
+    import { firebaseConfig } from "./assets/firebase-config.js";
+    import { friendlyFirebaseMessage } from "./assets/firebase-errors.js";
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-app.js";
     import {
       initializeAuth,
@@ -54,17 +56,6 @@
       where,
       serverTimestamp
     } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore.js";
-
-    const firebaseConfig = {
-      apiKey: "AIzaSyC49VFcW1pjHq0sCkdcps_DwUAoo4z5oaw",
-      authDomain: "blacket-65c5b.firebaseapp.com",
-      databaseURL: "https://blacket-65c5b-default-rtdb.firebaseio.com",
-      projectId: "blacket-65c5b",
-      storageBucket: "blacket-65c5b.firebasestorage.app",
-      messagingSenderId: "497023905730",
-      appId: "1:497023905730:web:a59093052a3f93a476305b",
-      measurementId: "G-XZZR5DH79B"
-    };
 
     const app = initializeApp(firebaseConfig);
     let auth;
@@ -119,7 +110,6 @@
       const avatar = defaultAvatar;
       let coins = 0;
       let title = "User";
-      if (email === "chonhouliu@gmail.com") { coins = 999999; title = "Owner"; }
       const displayId = await ensureUniqueDisplayId();
       await setDoc(doc(db, "users", uid), {
         email,
@@ -158,7 +148,7 @@
         setMsg("Success — opening app…", true);
         window.location.replace(afterSignupUrl);
       } catch (err) {
-        setMsg(err.message || "Sign up failed.");
+        setMsg(friendlyFirebaseMessage(err));
         submit.disabled = false;
       }
     });
