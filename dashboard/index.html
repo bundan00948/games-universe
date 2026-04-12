@@ -1704,9 +1704,10 @@
       .inv-blooks-catalog {
         flex: 1 1 58%;
         min-width: 0;
-        max-height: min(78vh, 820px);
-        overflow-y: auto;
-        padding-right: 6px;
+        max-height: none;
+        overflow-y: visible;
+        overflow-x: visible;
+        padding-right: 0;
       }
       .inv-blook-detail {
         flex: 0 0 var(--inv-detail-card-size, min(300px, 38vw));
@@ -3350,8 +3351,9 @@
       min-height: 0;
     }
     .pack-reveal-blook-wrap img {
-      max-width: 78%;
-      max-height: min(38vmin, 42%);
+      /* ~30% larger than previous 78% / min(38vmin, 42%) caps */
+      max-width: min(100%, 101.4%);
+      max-height: min(49.4vmin, 54.6%);
       object-fit: contain;
       filter: drop-shadow(0 8px 24px rgba(0,0,0,0.5));
     }
