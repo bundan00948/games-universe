@@ -6722,18 +6722,54 @@
       }
     }
 
+    const MAIN_SITE_ORIGIN = 'https://gamesuniverse.org';
+    const PANEL_QUERY_KEYS = ['panel', 'tab', 'page'];
+
+    function normalizePanelPageId(raw) {
+      const s = String(raw || '').trim().toLowerCase().replace(/[^a-z0-9-]/g, '');
+      if (!s) return null;
+      return s.endsWith('-page') ? s : (s + '-page');
+    }
+
+    function readWantedPanelFromSearch() {
+      try {
+        const sp = new URLSearchParams(window.location.search || '');
+        for (let i = 0; i < PANEL_QUERY_KEYS.length; i++) {
+          const id = normalizePanelPageId(sp.get(PANEL_QUERY_KEYS[i]));
+          if (id && document.getElementById(id)) return id;
+        }
+      } catch (_) {}
+      return null;
+    }
+
+    function stripPanelQueryFromUrl() {
+      try {
+        const u = new URL(window.location.href);
+        let changed = false;
+        for (let i = 0; i < PANEL_QUERY_KEYS.length; i++) {
+          const k = PANEL_QUERY_KEYS[i];
+          if (u.searchParams.has(k)) {
+            u.searchParams.delete(k);
+            changed = true;
+          }
+        }
+        if (!changed) return;
+        const tail = u.search + u.hash;
+        window.history.replaceState({}, '', u.pathname + (tail === '?' ? '' : tail));
+      } catch (_) {}
+    }
+
     let dashboardLoginRedirectSent = false;
     function redirectGuestToLogin() {
       if (dashboardLoginRedirectSent) return;
       const path = (location.pathname || '').toLowerCase();
       if (path.endsWith('/login.html') || path.endsWith('/signup.html')) return;
       hidePageLoading();
-      const next = encodeURIComponent(location.pathname + location.search + location.hash);
       const go = () => {
         if (dashboardLoginRedirectSent) return;
         if (auth.currentUser) return;
         dashboardLoginRedirectSent = true;
-        window.location.replace(`${location.origin}/login.html?next=${next}`);
+        window.location.replace(MAIN_SITE_ORIGIN + '/');
       };
       /* Defer one tick so IndexedDB-restored sessions are not mistaken for logged-out. */
       setTimeout(go, 80);
@@ -7776,6 +7812,25 @@
       if (friendCount) friendCount.textContent = friendsSnap.size;
     }
 
+    function activateDashboardPanel(pageId) {
+      if (!pageId) return false;
+      const pageEl = document.getElementById(pageId);
+      const sidebarBtn = document.querySelector('.sidebar .tab-button[data-page="' + pageId + '"]');
+      if (!pageEl || !sidebarBtn) return false;
+      document.querySelectorAll('.sidebar .tab-button').forEach((btn) => btn.classList.remove('active'));
+      document.querySelectorAll('.page').forEach((page) => page.classList.remove('active'));
+      sidebarBtn.classList.add('active');
+      pageEl.classList.add('active');
+      setGoldenTicketSidebarGoldStyle(pageId === 'gt-page');
+      if (pageId !== 'emporium-page') cleanupEmporiumListingsListener();
+      return true;
+    }
+
+    function goToProfilePageTab() {
+      activateDashboardPanel('profile-page');
+      if (currentUser?.uid) loadProfilePage(currentUser.uid);
+    }
+
     // ========== Auth state observer with owner enforcement ==========
     onAuthStateChanged(auth, async (user) => {
       currentUser = user;
@@ -7821,17 +7876,17 @@
           setupGoldenTicketRemoteSync();
           if (goToMainAfterAuth) {
             goToMainAfterAuth = false;
-            document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
-            document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
-            const mainBtn = document.querySelector('.tab-button[data-page="main-page"]');
-            const mainPage = document.getElementById('main-page');
-            if (mainBtn) mainBtn.classList.add('active');
-            if (mainPage) mainPage.classList.add('active');
-            setGoldenTicketSidebarGoldStyle(false);
+            activateDashboardPanel('main-page');
             if (!mainPageGamesMounted) ensureMainPageGamesDeferredObserver();
           } else if (redirectToProfileAfterAuth) {
             redirectToProfileAfterAuth = false;
             goToProfilePageTab();
+          } else {
+            const wanted = readWantedPanelFromSearch();
+            if (wanted) {
+              stripPanelQueryFromUrl();
+              activateDashboardPanel(wanted);
+            }
           }
           if (pendingGame) { showConfirmModal(pendingGame); pendingGame = null; }
           sidebar.classList.add('active');
@@ -7846,6 +7901,7 @@
             case 'history-page': loadPlayHistory(user.uid); break;
             case 'shop-page': loadShopPacks(); loadUserBalance(user.uid); break;
             case 'inventory-page': loadInventory(user.uid); loadFriends(user.uid); break;
+            case 'emporium-page': loadEmporiumPage(); loadUserBalance(user.uid); break;
             case 'gt-page': loadGoldenTicketGiveawaysPage(); break;
             case 'missions-page': loadMissions(user.uid); break;
             case 'chat-page': loadGlobalChat(); break;
@@ -8003,17 +8059,6 @@
         const allGames = games;
         return { topGames, newGames, allGames };
       } catch(e) { console.error(e); return { topGames: [], newGames: [], allGames: [] }; }
-    }
-
-    function goToProfilePageTab() {
-      document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
-      document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
-      const profileBtn = document.querySelector('.tab-button[data-page="profile-page"]');
-      const profilePage = document.getElementById('profile-page');
-      if (profileBtn) profileBtn.classList.add('active');
-      if (profilePage) profilePage.classList.add('active');
-      setGoldenTicketSidebarGoldStyle(false);
-      if (currentUser?.uid) loadProfilePage(currentUser.uid);
     }
 
     function populateIssueGameSelect(allGames) {
@@ -8259,33 +8304,20 @@
       }
     });
 
-    // ========== Sidebar page switching ==========
-    document.querySelectorAll('.tab-button').forEach(button => {
+    // ========== Sidebar page switching (full reload per panel when signed in) ==========
+    document.querySelectorAll('.sidebar .tab-button').forEach((button) => {
       button.addEventListener('click', () => {
         const pageId = button.getAttribute('data-page');
-        if (!currentUser && pageId !== 'main-page') { noticeModal.style.display = 'flex'; return; }
-        document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
-        document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
-        button.classList.add('active');
-        document.getElementById(pageId).classList.add('active');
-        setGoldenTicketSidebarGoldStyle(pageId === 'gt-page');
-        switch (pageId) {
-          case 'main-page':
-            if (!mainPageGamesMounted) ensureMainPageGamesDeferredObserver();
-            break;
-          case 'profile-page': loadProfilePage(currentUser.uid); break;
-          case 'history-page': loadPlayHistory(currentUser.uid); break;
-          case 'shop-page': loadShopPacks(); loadUserBalance(currentUser.uid); break;
-          case 'inventory-page': loadInventory(currentUser.uid); loadFriends(currentUser.uid); break;
-          case 'emporium-page': loadEmporiumPage(); loadUserBalance(currentUser.uid); break;
-          case 'gt-page': loadGoldenTicketGiveawaysPage(); break;
-          case 'missions-page': loadMissions(currentUser.uid); break;
-          case 'chat-page': loadGlobalChat(); break;
-          case 'friends-page': loadFriends(currentUser.uid); break;
-          case 'settings-page': loadSettings(currentUser.uid); break;
-          case 'staff-page': loadStaffPanel(); break;
+        if (!pageId) return;
+        if (!currentUser) {
+          window.location.href = MAIN_SITE_ORIGIN + '/';
+          return;
         }
-        if (pageId !== 'emporium-page') cleanupEmporiumListingsListener();
+        const q = new URLSearchParams(window.location.search || '');
+        PANEL_QUERY_KEYS.forEach((k) => q.delete(k));
+        q.set('panel', pageId);
+        const qs = q.toString();
+        window.location.href = '/dashboard/' + (qs ? '?' + qs : '') + (window.location.hash || '');
       });
     });
 
