@@ -3,24 +3,22 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="First Unblooked Blooket Server — hundreds of free unblocked games, giveaways, and more on Game Universe.">
+  <meta name="description" content="First Game Platform — the first Blooket inspired public mobile gaming platform on Game Universe.">
   <meta name="theme-color" content="#0c1814">
-  <title>Game Universe — First Unblooked Blooket Server</title>
+  <title>Game Universe — First Game Platform</title>
   <link rel="preconnect" href="https://i.postimg.cc" crossorigin>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Titan+One&display=swap" rel="stylesheet">
   <style>
     :root {
-      --bg: #071210;
-      --bg-mid: #0f221c;
+      --left-bg: #0a1618;
+      --right-bg: #120a1c;
       --yellow: #a8ff78;
       --purple: #78ffd6;
       --text: #e8fff4;
       --muted: #b8e8d8;
-      --discord: #5865f2;
-      --hero: url("https://i.postimg.cc/SK37fnxF/Screenshot-2026-04-11-at-18-25-43-removebg.png");
-      --content-max: 1120px;
+      --blook-pattern: url("https://ac.blooket.com/@codeblooket/blooket-frontend-components/v0.2.45/assets/BlookCheckers-e975c505.png");
     }
     * { margin: 0; padding: 0; box-sizing: border-box; }
     html { color-scheme: dark; }
@@ -29,76 +27,68 @@
       overflow-x: clip;
       font-family: 'Nunito', system-ui, sans-serif;
       color: var(--text);
-      background: radial-gradient(ellipse 80% 60% at 10% 20%, rgba(120, 255, 214, 0.16), transparent 55%),
-        radial-gradient(ellipse 70% 50% at 90% 80%, rgba(168, 255, 120, 0.12), transparent 50%),
-        linear-gradient(165deg, var(--bg) 0%, var(--bg-mid) 45%, #0a1814 100%);
+      background: var(--left-bg);
     }
-    .page-root {
+    .landing {
       min-height: 100vh;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+      background: linear-gradient(341.9deg, var(--left-bg) 50%, var(--right-bg) 50%);
+    }
+    @media (max-width: 900px) {
+      .landing {
+        grid-template-columns: 1fr;
+        background: linear-gradient(168deg, var(--left-bg) 52%, var(--right-bg) 52%);
+      }
+      .landing-right { min-height: min(52vh, 520px); order: -1; }
+    }
+    .landing-left {
+      position: relative;
       display: flex;
       flex-direction: column;
+      padding: clamp(20px, 4vw, 40px);
+      min-height: 100vh;
     }
-    .top-bar {
-      max-width: var(--content-max);
-      margin: 0 auto;
-      width: 100%;
-      padding: clamp(24px, 4vw, 40px) clamp(20px, 4vw, 40px) clamp(12px, 2vh, 20px);
-    }
-    .brand {
+    .brand-link {
+      align-self: flex-start;
       font-family: 'Titan One', 'Nunito', sans-serif;
       font-weight: 400;
-      font-size: clamp(1.35rem, 3vw, 1.85rem);
+      font-size: clamp(1.2rem, 2.6vw, 1.65rem);
       letter-spacing: 0.02em;
+      text-decoration: none;
       background: linear-gradient(105deg, #fff 0%, var(--yellow) 40%, var(--purple) 78%, #fde9ff 100%);
       -webkit-background-clip: text;
       background-clip: text;
       -webkit-text-fill-color: transparent;
+      margin-bottom: auto;
     }
-    /* Full-bleed row: hero occupies entire right half of the viewport and is vertically centered */
-    .split-bleed {
+    .brand-link:hover { filter: brightness(1.08); }
+    .left-body {
       flex: 1;
       display: flex;
-      min-height: 0;
-      width: 100vw;
-      margin-left: calc(50% - 50vw);
+      flex-direction: column;
+      justify-content: center;
+      gap: clamp(18px, 3vh, 28px);
+      max-width: 28rem;
+      padding-top: clamp(12px, 3vh, 32px);
+      padding-bottom: clamp(24px, 5vh, 48px);
     }
-    .split-inner {
-      flex: 1;
-      display: grid;
-      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-      align-items: center;
-      gap: clamp(16px, 3vw, 40px);
-      padding: 0 0 0 clamp(20px, 4vw, 40px);
-      max-width: none;
-    }
-    @media (max-width: 900px) {
-      .split-inner {
-        grid-template-columns: 1fr;
-        padding: 0 clamp(20px, 4vw, 40px);
-        gap: 28px;
-      }
-      .visual { order: -1; min-height: 300px !important; width: 100% !important; margin-right: 0 !important; border-radius: 20px !important; }
-    }
-    .copy {
-      max-width: 34rem;
-      padding-right: clamp(8px, 2vw, 24px);
-    }
-    /* Only this line: Titan One, larger */
-    .tagline {
+    .hero-title {
       font-family: 'Titan One', 'Nunito', sans-serif;
       font-weight: 400;
-      font-size: clamp(1.65rem, 4.2vw, 2.85rem);
-      line-height: 1.2;
+      font-size: clamp(2.1rem, 5.5vw, 3.35rem);
+      line-height: 1.08;
       color: var(--yellow);
-      margin-bottom: 16px;
       text-shadow: 0 0 24px rgba(168, 255, 120, 0.35);
     }
+    .hero-title .line {
+      display: block;
+    }
     .lead {
-      font-size: clamp(0.98rem, 1.85vw, 1.12rem);
+      font-size: clamp(0.95rem, 1.75vw, 1.1rem);
       font-weight: 700;
-      line-height: 1.65;
+      line-height: 1.6;
       color: var(--muted);
-      margin-bottom: 28px;
     }
     .actions {
       display: flex;
@@ -139,88 +129,100 @@
       background: rgba(238, 102, 255, 0.12);
       transform: translateY(-2px);
     }
-    .btn-discord {
-      background: var(--discord);
-      color: #fff;
-      border: 1px solid rgba(255, 255, 255, 0.2);
-    }
-    .btn-discord:hover {
-      filter: brightness(1.08);
-      transform: translateY(-2px);
-      box-shadow: 0 10px 28px rgba(88, 101, 242, 0.45);
-    }
-    .visual {
+    .landing-right {
       position: relative;
-      height: min(78vh, 820px);
-      width: calc(100% + max(0px, (100vw - var(--content-max)) / 2 + clamp(20px, 4vw, 40px)));
-      margin-right: calc(50% - 50vw);
-      justify-self: stretch;
-      align-self: center;
-      border-radius: 22px 0 0 22px;
-      border: 1px solid rgba(255, 255, 160, 0.35);
-      border-right: none;
-      box-shadow:
-        0 0 0 1px rgba(238, 102, 255, 0.2) inset,
-        -8px 24px 60px rgba(0, 0, 0, 0.45),
-        0 0 80px rgba(238, 102, 255, 0.12);
-      background-color: rgba(30, 12, 42, 0.85);
-      background-image: var(--hero);
-      background-repeat: no-repeat;
-      background-position: 92% center;
-      background-size: 125% auto;
+      min-height: 100vh;
       overflow: hidden;
+      isolation: isolate;
     }
-    .visual::after {
+    .landing-right::before {
       content: "";
       position: absolute;
-      inset: 0;
-      background: linear-gradient(100deg, rgba(18, 8, 26, 0.82) 0%, rgba(18, 8, 26, 0.22) 48%, transparent 78%);
+      top: -14%;
+      left: -14%;
+      width: 128%;
+      height: 128%;
+      background-image: var(--blook-pattern);
+      background-size: 460px 460px;
+      background-repeat: repeat;
+      opacity: 0.14;
       pointer-events: none;
+      z-index: 0;
+      transform-origin: 50% 42%;
+      animation: landingPatternSwim 22s cubic-bezier(0.42, 0, 0.58, 1) infinite alternate;
     }
-    @media (max-width: 900px) {
-      .visual {
-        background-position: center center;
-        background-size: 118% auto;
-        border: 1px solid rgba(255, 255, 160, 0.35);
+    @keyframes landingPatternSwim {
+      0% {
+        background-position: 0 0;
+        transform: rotate(-2.4deg) scale(1.09);
       }
-      .visual::after {
-        background: linear-gradient(180deg, rgba(18, 8, 26, 0.5) 0%, transparent 42%, rgba(18, 8, 26, 0.45) 100%);
+      100% {
+        background-position: 230px -920px;
+        transform: rotate(2.4deg) scale(1.12);
       }
+    }
+    .blook-stage {
+      position: relative;
+      z-index: 1;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: clamp(20px, 4vw, 40px);
+    }
+    .blook-stage img {
+      max-width: 100%;
+      max-height: min(78vh, 720px);
+      width: auto;
+      height: auto;
+      object-fit: contain;
+      object-position: center;
+      filter: drop-shadow(0 12px 40px rgba(0, 0, 0, 0.45));
     }
     .foot-wrap {
-      max-width: var(--content-max);
-      margin: 0 auto;
-      width: 100%;
-      padding: 28px clamp(20px, 4vw, 40px) clamp(24px, 4vw, 40px);
+      grid-column: 1 / -1;
+      padding: 20px clamp(20px, 4vw, 40px) clamp(24px, 4vw, 40px);
+      background: rgba(7, 18, 16, 0.92);
+      border-top: 1px solid rgba(255, 255, 160, 0.12);
     }
     footer.landing-foot {
       font-size: 0.75rem;
       color: rgba(255, 255, 255, 0.45);
+      text-align: center;
     }
     footer.landing-foot a { color: var(--yellow); }
+    @media (prefers-reduced-motion: reduce) {
+      .landing-right::before {
+        animation: none !important;
+        transform: rotate(-2.4deg) scale(1.09);
+      }
+    }
   </style>
 </head>
 <body>
-  <div class="page-root">
-    <div class="top-bar">
-      <div class="brand" id="site-brand">GAME UNIVERSE</div>
-    </div>
-    <div class="split-bleed">
-      <div class="split-inner">
-        <div class="copy">
-          <h2 class="tagline">First Unblooked Blooket Server</h2>
-          <p class="lead">
-            Hundreds of Free Unblocked Games, a high edge replicate, Giftcard and cash giveaways, fully written by Brendan.
-          </p>
-          <div class="actions">
-            <a class="btn btn-primary" id="btn-login" href="login.html">Login</a>
-            <a class="btn btn-ghost" id="btn-signup" href="signup.html">Sign Up</a>
-            <a class="btn btn-discord" href="https://discord.gg/buf8sesyrB" target="_blank" rel="noopener noreferrer">Discord</a>
-          </div>
+  <div class="landing">
+    <section class="landing-left" aria-label="Game Universe introduction">
+      <a class="brand-link" href="https://gamesuniverse.org" target="_blank" rel="noopener noreferrer">Game Universe</a>
+      <div class="left-body">
+        <h1 class="hero-title">
+          <span class="line">First</span>
+          <span class="line">Game</span>
+          <span class="line">Platform</span>
+        </h1>
+        <p class="lead">
+          The first Blooket inspired public Mobile Gaming Platform, written entirely by Brendan
+        </p>
+        <div class="actions">
+          <a class="btn btn-primary" id="btn-signup" href="signup.html">Sign Up</a>
+          <a class="btn btn-ghost" id="btn-login" href="login.html">Login</a>
         </div>
-        <div class="visual" role="img" aria-label="Game icons hero art"></div>
       </div>
-    </div>
+    </section>
+    <section class="landing-right" aria-label="Blook artwork">
+      <div class="blook-stage">
+        <img src="https://i.postimg.cc/SK37fnxF/Screenshot-2026-04-11-at-18-25-43-removebg.png" alt="Blook character artwork" width="800" height="800" decoding="async" fetchpriority="high">
+      </div>
+    </section>
     <div class="foot-wrap">
       <footer class="landing-foot">© Game Universe · <a href="https://gamesuniverse.org">gamesuniverse.org</a></footer>
     </div>
