@@ -18,7 +18,8 @@
       --purple: #78ffd6;
       --text: #e8fff4;
       --muted: #b8e8d8;
-      --split-line: rgba(255, 255, 200, 0.55);
+      /* Slight lean from plumb: seam matches between solid left and animated right (~2.7° at typical widths) */
+      --split-skew: min(2.8vw, 40px);
       --blook-pattern: url("https://ac.blooket.com/@codeblooket/blooket-frontend-components/v0.2.45/assets/BlookCheckers-e975c505.png");
     }
     * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -28,44 +29,46 @@
       overflow-x: clip;
       font-family: 'Nunito', system-ui, sans-serif;
       color: var(--text);
-      background: var(--left-bg);
+      background: var(--right-bg);
     }
     .landing {
       position: relative;
       min-height: 100vh;
       display: grid;
       grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-      /* Two panels + a hairline along the 341.9° boundary */
-      background: linear-gradient(
-        341.9deg,
-        var(--left-bg) 0%,
-        var(--left-bg) calc(50% - 1px),
-        var(--split-line) 50%,
-        var(--right-bg) calc(50% + 1px),
-        var(--right-bg) 100%
-      );
-    }
-    @media (max-width: 900px) {
-      .landing {
-        grid-template-columns: 1fr;
-        background: linear-gradient(
-          168deg,
-          var(--left-bg) 0%,
-          var(--left-bg) calc(52% - 1px),
-          var(--split-line) 52%,
-          var(--right-bg) calc(52% + 1px),
-          var(--right-bg) 100%
-        );
-      }
-      .landing-right { min-height: min(52vh, 520px); order: -1; }
+      background: var(--right-bg);
+      overflow-x: clip;
     }
     .landing-left {
       position: relative;
-      z-index: 1;
+      z-index: 2;
       display: flex;
       flex-direction: column;
       padding: clamp(20px, 4vw, 40px);
       min-height: 100vh;
+      min-width: 0;
+      background: var(--left-bg);
+      /* Widen slightly so angled edge meets the right panel seam (no gap) */
+      width: calc(100% + var(--split-skew));
+      margin-right: calc(-1 * var(--split-skew));
+      /* Near-vertical seam, tilted a little counterclockwise from plumb */
+      clip-path: polygon(0 0, 100% 0, calc(100% - var(--split-skew)) 100%, 0 100%);
+    }
+    @media (max-width: 900px) {
+      .landing {
+        grid-template-columns: 1fr;
+      }
+      .landing-left {
+        width: 100%;
+        margin-right: 0;
+        clip-path: none;
+        background: var(--left-bg);
+      }
+      .landing-right {
+        clip-path: none;
+        min-height: min(52vh, 520px);
+        order: -1;
+      }
     }
     .brand-link {
       align-self: flex-start;
@@ -150,9 +153,12 @@
     .landing-right {
       position: relative;
       z-index: 1;
+      min-width: 0;
       min-height: 100vh;
       overflow: hidden;
       isolation: isolate;
+      background: var(--right-bg);
+      clip-path: polygon(var(--split-skew) 0, 100% 0, 100% 100%, 0 100%);
     }
     .landing-right::before {
       content: "";
