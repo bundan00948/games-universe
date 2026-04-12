@@ -19,7 +19,7 @@
       --text: #e8fff4;
       --muted: #b8e8d8;
       /* Curved seam: left column overlaps right so only the left needs a clip */
-      --seam-overlap: min(14vw, 180px);
+      --seam-overlap: min(15vw, 195px);
       --blook-pattern: url("https://ac.blooket.com/@codeblooket/blooket-frontend-components/v0.2.45/assets/BlookCheckers-e975c505.png");
     }
     * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -35,8 +35,8 @@
       position: relative;
       min-height: 100vh;
       display: grid;
-      /* Split sits left of center so the curved seam reads closer to the left edge */
-      grid-template-columns: minmax(0, 0.36fr) minmax(0, 0.64fr);
+      /* Equal columns keep the hero image centered in the right half (viewport) */
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
       background: var(--right-bg);
       overflow-x: clip;
     }
@@ -51,8 +51,8 @@
       background: var(--left-bg);
       width: calc(100% + var(--seam-overlap));
       margin-right: calc(-1 * var(--seam-overlap));
-      /* Smooth curved right edge (percent coords; bulge + bottom tuck read as one continuous curve) */
-      clip-path: path('M 0 0 L 100% 0 C 116% 14% 116% 86% 76% 100% L 0 100% Z');
+      /* Curved seam: shifted a bit left vs prior; top/bottom inset differ for a slightly stronger lean */
+      clip-path: path('M 0 0 L 95% 0 C 122% 12% 122% 88% 67% 100% L 0 100% Z');
     }
     @media (max-width: 900px) {
       .landing {
