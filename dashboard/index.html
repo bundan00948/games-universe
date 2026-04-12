@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="theme-color" content="#22102e">
-  <meta name="msapplication-TileColor" content="#ee66ff">
+  <meta name="theme-color" content="#0c1814">
+  <meta name="msapplication-TileColor" content="#78ffd6">
   <title>Game Universe - All Games</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -15,27 +15,34 @@
   <style>
     /* Existing CSS styles remain unchanged */
     :root {
-      --theme-yellow: #ffffa0;
-      --theme-purple: #ee66ff;
-      --theme-purple-deep: #a028c4;
-      --theme-purple-glow: rgba(238, 102, 255, 0.72);
-      --text-on-yellow: #0a0a0a;
-      --text-on-purple: #ffffff;
-      --bg-dark: #22102e;
-      --card-bg: #321c40;
-      --neon-green: #ffffa0;
-      --neon-pink: #FF3D6C;
-      --theme-grey: #fff4ff;
-      --text-primary: #ffffff;
-      --text-secondary: #f5e0ff;
-      --star-filled: #ffe566;
-      --star-empty: #66587a;
-      --sidebar-bg: #26142f;
+      --theme-mint: #a8ff78;
+      --theme-cyan: #78ffd6;
+      --theme-cyan-deep: #2ae8c2;
+      --theme-mint-glow: rgba(168, 255, 120, 0.55);
+      --text-on-mint: #0b1a0f;
+      --text-on-cyan: #04221c;
+      --bg-dark: #0c1814;
+      --card-bg: #12221c;
+      /* Legacy names map to mint/cyan so existing selectors keep working */
+      --theme-yellow: var(--theme-mint);
+      --theme-purple: var(--theme-cyan);
+      --theme-purple-deep: #1a6b5c;
+      --theme-purple-glow: rgba(120, 255, 214, 0.45);
+      --text-on-yellow: var(--text-on-mint);
+      --text-on-purple: var(--text-on-cyan);
+      --neon-green: var(--theme-mint);
+      --neon-pink: #ff6b8a;
+      --theme-grey: #d8fff0;
+      --text-primary: #e8fff4;
+      --text-secondary: #b8e8d8;
+      --star-filled: #fff59d;
+      --star-empty: #3d5c52;
+      --sidebar-bg: #0f1f1a;
       --sidebar-width: 300px;
-      --surface-input: #2c1f3a;
-      --surface-panel: #281c34;
-      --surface-muted: #4a3d5e;
-      --border-ui: rgba(238, 102, 255, 0.32);
+      --surface-input: #152824;
+      --surface-panel: #13221e;
+      --surface-muted: #2a4540;
+      --border-ui: rgba(120, 255, 214, 0.35);
       --common: #c0c0c0;
       --uncommon: #2e7d32;
       --rare: #1565c0;
@@ -46,12 +53,12 @@
     }
 
     ::selection {
-      background: rgba(238, 102, 255, 0.58);
-      color: var(--text-primary);
+      background: rgba(120, 255, 214, 0.45);
+      color: var(--text-on-cyan);
     }
     ::-moz-selection {
-      background: rgba(238, 102, 255, 0.58);
-      color: var(--text-primary);
+      background: rgba(120, 255, 214, 0.45);
+      color: var(--text-on-cyan);
     }
 
     * {
@@ -93,7 +100,7 @@
 
     body {
       background-color: var(--bg-dark);
-      background-image: linear-gradient(165deg, #1a0c24 0%, #2a1438 38%, #1c0e28 72%, #281836 100%);
+      background-image: linear-gradient(165deg, #071210 0%, #0f221c 40%, #0c1814 72%, #102820 100%);
       font-family: 'Nunito', sans-serif;
       color: var(--text-primary);
       overflow-x: hidden;
@@ -107,10 +114,10 @@
       z-index: -3;
       pointer-events: none;
       background:
-        radial-gradient(ellipse 90% 55% at 14% 12%, rgba(255, 255, 160, 0.36), transparent 54%),
-        radial-gradient(ellipse 78% 52% at 88% 86%, rgba(238, 102, 255, 0.44), transparent 52%),
-        radial-gradient(ellipse 62% 48% at 48% 48%, rgba(255, 255, 160, 0.16), transparent 58%),
-        radial-gradient(ellipse 52% 42% at 72% 22%, rgba(238, 102, 255, 0.28), transparent 50%);
+        radial-gradient(ellipse 90% 55% at 14% 12%, rgba(168, 255, 120, 0.28), transparent 54%),
+        radial-gradient(ellipse 78% 52% at 88% 86%, rgba(120, 255, 214, 0.32), transparent 52%),
+        radial-gradient(ellipse 62% 48% at 48% 48%, rgba(168, 255, 120, 0.12), transparent 58%),
+        radial-gradient(ellipse 52% 42% at 72% 22%, rgba(120, 255, 214, 0.2), transparent 50%);
       animation: siteAmbienceShift 18s ease-in-out infinite;
     }
     body::after {
@@ -121,8 +128,8 @@
       pointer-events: none;
       opacity: 0.76;
       background-image:
-        linear-gradient(rgba(255, 255, 160, 0.11) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(238, 102, 255, 0.12) 1px, transparent 1px);
+        linear-gradient(rgba(168, 255, 120, 0.09) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(120, 255, 214, 0.1) 1px, transparent 1px);
       background-size: 175px 175px;
       transform-origin: 50% 50%;
       animation: siteGridSwim 14s ease-in-out infinite alternate;
@@ -159,13 +166,13 @@
       background: conic-gradient(
         from 0deg at 50% 50%,
         transparent 0deg,
-        rgba(255, 255, 160, 0.16) 42deg,
+        rgba(168, 255, 120, 0.14) 42deg,
         transparent 88deg,
-        rgba(238, 102, 255, 0.2) 132deg,
+        rgba(120, 255, 214, 0.18) 132deg,
         transparent 178deg,
-        rgba(255, 255, 160, 0.1) 224deg,
+        rgba(168, 255, 120, 0.08) 224deg,
         transparent 268deg,
-        rgba(238, 102, 255, 0.15) 312deg,
+        rgba(120, 255, 214, 0.12) 312deg,
         transparent 360deg
       );
       animation: siteOrbitGlow 48s linear infinite;
@@ -1919,9 +1926,180 @@
       margin-top: 16px;
     }
     .inv-blook-detail-actions .collect-btn,
-    .inv-blook-detail-actions .cancel-btn {
+    .inv-blook-detail-actions .cancel-btn,
+    .inv-blook-detail-actions .emporium-list-btn {
       flex: 1;
       min-width: 112px;
+    }
+    .inv-blook-detail-actions .emporium-list-btn {
+      background: linear-gradient(135deg, rgba(168,255,120,0.35), rgba(120,255,214,0.25));
+      color: var(--text-primary);
+      border: 1px solid rgba(120, 255, 214, 0.45);
+    }
+    .inv-blook-detail-actions .emporium-list-btn:hover {
+      filter: brightness(1.08);
+    }
+
+    /* Emporium — player marketplace */
+    .emporium-page-wrap { max-width: 1100px; margin: 0 auto; }
+    .emporium-toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 14px;
+      align-items: flex-end;
+      margin: 18px 0 22px;
+    }
+    .emporium-field { display: flex; flex-direction: column; gap: 6px; min-width: 160px; }
+    .emporium-field label {
+      font-size: 0.72rem; font-weight: 900; text-transform: uppercase; letter-spacing: 0.06em;
+      color: var(--text-secondary);
+    }
+    .emporium-field select,
+    .emporium-field input[type="text"] {
+      padding: 10px 12px;
+      border-radius: 12px;
+      border: 1px solid var(--border-ui);
+      background: var(--surface-input);
+      color: var(--text-primary);
+      font-weight: 700;
+      font-size: 0.9rem;
+    }
+    .emporium-pick-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 12px;
+      max-height: 220px;
+      overflow-y: auto;
+      padding: 4px 2px 8px;
+      margin-bottom: 8px;
+    }
+    .emporium-pack-row {
+      grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+      max-height: 200px;
+    }
+    .visually-hidden {
+      position: absolute !important;
+      width: 1px; height: 1px;
+      padding: 0; margin: -1px;
+      overflow: hidden; clip: rect(0,0,0,0);
+      white-space: nowrap; border: 0;
+    }
+    .emporium-pick-card {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 12px;
+      border-radius: 14px;
+      border: 2px solid rgba(120, 255, 214, 0.2);
+      background: var(--surface-panel);
+      cursor: pointer;
+      text-align: left;
+      transition: border-color 0.15s, transform 0.15s;
+    }
+    .emporium-pick-card:hover { border-color: var(--theme-mint); transform: translateY(-1px); }
+    .emporium-pick-card.selected {
+      border-color: var(--theme-mint);
+      box-shadow: 0 0 0 1px rgba(168, 255, 120, 0.35) inset;
+    }
+    .emporium-pick-card img {
+      width: 44px; height: 44px; object-fit: contain; border-radius: 10px;
+      background: rgba(0,0,0,0.25);
+    }
+    .emporium-pick-card .ep-name {
+      font-weight: 900; font-size: 0.85rem; color: var(--text-primary);
+      line-height: 1.2;
+    }
+    .emporium-pick-card .ep-sub { font-size: 0.72rem; color: var(--text-secondary); font-weight: 700; }
+    .emporium-listings {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(168px, 1fr));
+      gap: 14px;
+    }
+    .emporium-listing-card {
+      border-radius: 16px;
+      border: 2px solid rgba(120, 255, 214, 0.22);
+      background: linear-gradient(165deg, rgba(19,34,30,0.98), rgba(12,24,20,0.95));
+      padding: 14px 12px 12px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      min-height: 168px;
+      position: relative;
+      overflow: hidden;
+    }
+    .emporium-listing-card .ep-l-img {
+      width: 56px; height: 56px; object-fit: contain;
+      filter: drop-shadow(0 6px 14px rgba(0,0,0,0.45));
+      margin-bottom: 8px;
+    }
+    .emporium-listing-card .ep-l-user {
+      font-weight: 900;
+      font-size: 0.82rem;
+      color: var(--text-primary);
+      line-height: 1.25;
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      word-break: break-word;
+      max-width: 100%;
+    }
+    .emporium-listing-card .ep-l-price {
+      margin-top: 10px;
+      font-family: 'Titan One', 'Nunito', sans-serif;
+      font-weight: 400;
+      font-size: 1.05rem;
+      color: var(--theme-mint);
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .emporium-listing-card .ep-l-price .fa-coins { font-size: 0.95rem; opacity: 0.95; }
+    .emporium-listing-card .ep-buy {
+      margin-top: 10px;
+      width: 100%;
+      padding: 8px 10px;
+      border-radius: 12px;
+      border: none;
+      font-weight: 900;
+      cursor: pointer;
+      background: var(--theme-mint);
+      color: var(--text-on-mint);
+    }
+    .emporium-listing-card .ep-buy:hover { filter: brightness(1.06); }
+    .emporium-listing-card .ep-buy:disabled { opacity: 0.5; cursor: not-allowed; }
+    .emporium-listing-card .ep-cancel {
+      margin-top: 6px;
+      width: 100%;
+      padding: 6px;
+      font-size: 0.75rem;
+      font-weight: 800;
+      border: none;
+      background: transparent;
+      color: var(--text-secondary);
+      cursor: pointer;
+      text-decoration: underline;
+    }
+    .emporium-empty {
+      text-align: center;
+      padding: 36px 16px;
+      color: var(--text-secondary);
+      font-weight: 700;
+    }
+    .emporium-list-modal .modal-content {
+      max-width: 440px;
+      border-radius: 20px;
+    }
+    .emporium-list-modal .form-group label { color: var(--text-secondary); }
+    .emporium-list-modal input[type="number"] {
+      width: 100%;
+      padding: 12px;
+      border-radius: 10px;
+      border: 1px solid var(--border-ui);
+      background: var(--surface-input);
+      color: var(--text-primary);
+      font-weight: 800;
     }
     .inv-blook-detail-placeholder {
       font-size: 0.9rem;
@@ -5191,6 +5369,9 @@
       <button class="tab-button" data-page="inventory-page">
         <i class="fas fa-box-open"></i> Inventory
       </button>
+      <button class="tab-button" data-page="emporium-page">
+        <i class="fas fa-store"></i> Emporium
+      </button>
       <button class="tab-button" data-page="missions-page">
         <i class="fas fa-tasks"></i> Missions
       </button>
@@ -5404,9 +5585,50 @@
               <div class="inv-blook-detail-actions" id="inv-panel-actions">
                 <button type="button" class="collect-btn" id="inv-panel-sell-btn">Sell one</button>
                 <button type="button" class="cancel-btn" id="inv-panel-send-btn">Send</button>
+                <button type="button" class="emporium-list-btn" id="inv-panel-emporium-btn">List in Emporium</button>
               </div>
             </div>
           </aside>
+        </div>
+      </div>
+    </div>
+
+    <!-- Emporium: browse listings by pack & blook -->
+    <div class="page" id="emporium-page">
+      <div class="page-content emporium-page-wrap">
+        <h2 class="page-title font-titan-header">Emporium</h2>
+        <p class="inv-blooks-sub">Buy blooks other players listed. Pick a pack, then a blook — listings sort cheapest first.</p>
+        <div class="emporium-toolbar">
+          <div class="emporium-field" style="flex:1;min-width:0;">
+            <label>Packs</label>
+            <div class="emporium-pick-grid emporium-pack-row" id="emporium-pack-picks" role="listbox" aria-label="Packs"></div>
+            <select id="emporium-pack-select" class="visually-hidden" aria-hidden="true" tabindex="-1"></select>
+          </div>
+          <div class="emporium-field" style="flex:1;min-width:220px;">
+            <label>Blooks</label>
+            <div class="emporium-pick-grid" id="emporium-blook-picks" role="listbox" aria-label="Blooks in pack"></div>
+          </div>
+        </div>
+        <div id="emporium-listings-wrap">
+          <div class="emporium-empty" id="emporium-empty">Select a blook to see listings.</div>
+          <div class="emporium-listings" id="emporium-listings" style="display:none;"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal emporium-list-modal" id="emporium-list-modal" style="display:none;z-index:9600;">
+      <div class="modal-content">
+        <div class="modal-body">
+          <h2 class="page-title font-titan-header" style="font-size:1.35rem;margin-bottom:12px;">List in Emporium</h2>
+          <p id="emporium-list-blook-name" style="font-weight:800;color:var(--text-secondary);margin-bottom:16px;">—</p>
+          <div class="form-group">
+            <label for="emporium-list-price">Price (coins)</label>
+            <input type="number" id="emporium-list-price" min="1" max="99999999" step="1" placeholder="e.g. 500">
+          </div>
+          <div class="buttons-row" style="margin-top:18px;">
+            <button type="button" class="collect-btn" id="emporium-list-confirm-btn">List for sale</button>
+            <button type="button" class="cancel-btn" id="emporium-list-cancel-btn">Cancel</button>
+          </div>
         </div>
       </div>
     </div>
@@ -6282,7 +6504,7 @@
       return items.find((it) => (it.name || '').trim().toLowerCase() === want) || null;
     }
 
-    const DEFAULT_NEON_GREEN = '#ffffa0';
+    const DEFAULT_NEON_GREEN = '#a8ff78';
     const DEFAULT_NEON_PINK = '#FF3D6C';
     const DEFAULT_THEME_GREY = '#f5e0ff';
 
@@ -6854,6 +7076,17 @@
     const invPanelActions = document.getElementById('inv-panel-actions');
     const invPanelSellBtn = document.getElementById('inv-panel-sell-btn');
     const invPanelSendBtn = document.getElementById('inv-panel-send-btn');
+    const invPanelEmporiumBtn = document.getElementById('inv-panel-emporium-btn');
+    const emporiumPackSelect = document.getElementById('emporium-pack-select');
+    const emporiumPackPicks = document.getElementById('emporium-pack-picks');
+    const emporiumBlookPicks = document.getElementById('emporium-blook-picks');
+    const emporiumListingsEl = document.getElementById('emporium-listings');
+    const emporiumEmptyEl = document.getElementById('emporium-empty');
+    const emporiumListModal = document.getElementById('emporium-list-modal');
+    const emporiumListBlookNameEl = document.getElementById('emporium-list-blook-name');
+    const emporiumListPriceInput = document.getElementById('emporium-list-price');
+    const emporiumListConfirmBtn = document.getElementById('emporium-list-confirm-btn');
+    const emporiumListCancelBtn = document.getElementById('emporium-list-cancel-btn');
     const friendsList = document.getElementById('friends-list');
     const globalChatContainer = document.getElementById('global-chat-container');
     const globalChatInput = document.getElementById('global-chat-input');
@@ -7732,6 +7965,7 @@
           case 'history-page': loadPlayHistory(currentUser.uid); break;
           case 'shop-page': loadShopPacks(); loadUserBalance(currentUser.uid); break;
           case 'inventory-page': loadInventory(currentUser.uid); loadFriends(currentUser.uid); break;
+          case 'emporium-page': loadEmporiumPage(); loadUserBalance(currentUser.uid); break;
           case 'gt-page': loadGoldenTicketGiveawaysPage(); break;
           case 'missions-page': loadMissions(currentUser.uid); break;
           case 'chat-page': loadGlobalChat(); break;
@@ -7739,6 +7973,7 @@
           case 'settings-page': loadSettings(currentUser.uid); break;
           case 'staff-page': loadStaffPanel(); break;
         }
+        if (pageId !== 'emporium-page') cleanupEmporiumListingsListener();
       });
     });
 
@@ -9564,6 +9799,345 @@
       try {
         await refreshGoldenTicketRuntime();
       } catch (_) {}
+    }
+
+    // ========== Emporium (player listings) ==========
+    let emporiumListingsUnsub = null;
+    let emporiumSelectedPackId = '';
+    let emporiumSelectedBlookName = '';
+    let emporiumPendingInvDocId = null;
+
+    function cleanupEmporiumListingsListener() {
+      if (emporiumListingsUnsub) {
+        try { emporiumListingsUnsub(); } catch (_) {}
+        emporiumListingsUnsub = null;
+      }
+    }
+
+    function emporiumSellerDisplayName() {
+      if (userNameSpan && userNameSpan.textContent && userNameSpan.textContent.trim()) {
+        return userNameSpan.textContent.trim();
+      }
+      return (currentUser && (currentUser.displayName || currentUser.email)) || 'Player';
+    }
+
+    function populateEmporiumPackSelect() {
+      const packs = (inventoryCatalogCache || []).filter(p => p && p.shopType !== 'banner');
+      packs.sort((a, b) => String(a.name || '').localeCompare(String(b.name || ''), undefined, { sensitivity: 'base' }));
+      if (emporiumPackSelect) {
+        emporiumPackSelect.innerHTML = packs.length
+          ? packs.map(p => `<option value="${escapeHtml(p.id)}">${escapeHtml(p.name || p.id)}</option>`).join('')
+          : '<option value="">No packs</option>';
+      }
+      if (emporiumPackPicks) {
+        emporiumPackPicks.innerHTML = '';
+        if (!packs.length) {
+          emporiumPackPicks.innerHTML = '<div class="emporium-empty" style="padding:12px;">No packs in shop.</div>';
+          emporiumSelectedPackId = '';
+          renderEmporiumBlookPicks();
+          return;
+        }
+        packs.forEach((p) => {
+          const btn = document.createElement('button');
+          btn.type = 'button';
+          btn.className = 'emporium-pick-card' + (p.id === emporiumSelectedPackId ? ' selected' : '');
+          btn.dataset.packId = p.id;
+          const artRaw = (marketPackArtUrl(p) || '').trim();
+          const art = artRaw && /^https?:\/\//i.test(artRaw) ? mediaThumbUrl(artRaw, 96, 82) : '';
+          const imgHtml = art
+            ? `<img src="${escapeHtml(art)}" alt="">`
+            : `<span style="width:44px;height:44px;border-radius:10px;background:rgba(0,0,0,0.28);display:flex;align-items:center;justify-content:center;"><i class="fas fa-cube" style="color:var(--theme-cyan);"></i></span>`;
+          btn.innerHTML = `${imgHtml}<div><div class="ep-name">${escapeHtml(p.name || p.id)}</div><div class="ep-sub">Pack</div></div>`;
+          btn.addEventListener('click', () => {
+            emporiumSelectedPackId = p.id;
+            emporiumSelectedBlookName = '';
+            if (emporiumPackSelect) emporiumPackSelect.value = p.id;
+            emporiumPackPicks.querySelectorAll('.emporium-pick-card').forEach(el => {
+              el.classList.toggle('selected', el.dataset.packId === p.id);
+            });
+            renderEmporiumBlookPicks();
+          });
+          emporiumPackPicks.appendChild(btn);
+        });
+      }
+      const prev = emporiumSelectedPackId;
+      if (prev && packs.some(p => p.id === prev)) {
+        emporiumSelectedPackId = prev;
+        if (emporiumPackSelect) emporiumPackSelect.value = prev;
+        emporiumPackPicks?.querySelectorAll('.emporium-pick-card').forEach(el => {
+          el.classList.toggle('selected', el.dataset.packId === prev);
+        });
+      } else if (packs[0]) {
+        emporiumSelectedPackId = packs[0].id;
+        if (emporiumPackSelect) emporiumPackSelect.value = packs[0].id;
+        emporiumPackPicks?.querySelectorAll('.emporium-pick-card').forEach(el => {
+          el.classList.toggle('selected', el.dataset.packId === packs[0].id);
+        });
+      } else {
+        emporiumSelectedPackId = '';
+      }
+      renderEmporiumBlookPicks();
+    }
+
+    function renderEmporiumBlookPicks() {
+      if (!emporiumBlookPicks) return;
+      emporiumBlookPicks.innerHTML = '';
+      const pack = (inventoryCatalogCache || []).find(p => p.id === emporiumSelectedPackId);
+      if (!pack || !Array.isArray(pack.items) || !pack.items.length) {
+        emporiumSelectedBlookName = '';
+        cleanupEmporiumListingsListener();
+        if (emporiumListingsEl) emporiumListingsEl.style.display = 'none';
+        if (emporiumEmptyEl) {
+          emporiumEmptyEl.style.display = '';
+          emporiumEmptyEl.textContent = 'No blooks in this pack yet.';
+        }
+        return;
+      }
+      const items = [...pack.items].filter(it => it && String(it.name || '').trim());
+      items.forEach((it) => {
+        const nm = String(it.name || '').trim();
+        const card = document.createElement('button');
+        card.type = 'button';
+        card.className = 'emporium-pick-card' + (nm === emporiumSelectedBlookName ? ' selected' : '');
+        card.setAttribute('role', 'option');
+        card.dataset.blookName = nm;
+        const art = String(it.imageUrl || '').trim();
+        const thumb = art && /^https?:\/\//i.test(art) ? mediaThumbUrl(art, 96, 82) : art;
+        const imgHtml = thumb
+          ? `<img src="${escapeHtml(thumb)}" alt="">`
+          : `<span style="width:44px;height:44px;border-radius:10px;background:rgba(0,0,0,0.28);display:flex;align-items:center;justify-content:center;font-size:1.25rem;">🎁</span>`;
+        card.innerHTML = `${imgHtml}<div><div class="ep-name">${escapeHtml(nm)}</div><div class="ep-sub">${escapeHtml(String(it.rarity || '').toUpperCase())}</div></div>`;
+        card.addEventListener('click', () => {
+          emporiumSelectedBlookName = nm;
+          emporiumBlookPicks.querySelectorAll('.emporium-pick-card').forEach(el => {
+            el.classList.toggle('selected', el.dataset.blookName === nm);
+          });
+          subscribeEmporiumListingsForSelection();
+        });
+        emporiumBlookPicks.appendChild(card);
+      });
+      if (!emporiumSelectedBlookName || !items.some(it => String(it.name || '').trim() === emporiumSelectedBlookName)) {
+        emporiumSelectedBlookName = String(items[0].name || '').trim();
+      }
+      emporiumBlookPicks.querySelectorAll('.emporium-pick-card').forEach(el => {
+        el.classList.toggle('selected', el.dataset.blookName === emporiumSelectedBlookName);
+      });
+      subscribeEmporiumListingsForSelection();
+    }
+
+    function subscribeEmporiumListingsForSelection() {
+      cleanupEmporiumListingsListener();
+      if (!emporiumSelectedPackId || !emporiumSelectedBlookName || !emporiumListingsEl || !emporiumEmptyEl) return;
+      const qy = query(
+        collection(db, 'emporiumListings'),
+        where('status', '==', 'active'),
+        where('packId', '==', emporiumSelectedPackId),
+        where('itemName', '==', emporiumSelectedBlookName),
+        orderBy('price', 'asc')
+      );
+      emporiumListingsUnsub = onSnapshot(qy, (snap) => {
+        const rows = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+        renderEmporiumListingCards(rows);
+      }, (err) => {
+        console.error('Emporium listings error', err);
+        emporiumEmptyEl.style.display = '';
+        emporiumEmptyEl.textContent = 'Could not load listings (check Firestore index for emporiumListings).';
+        emporiumListingsEl.style.display = 'none';
+      });
+    }
+
+    function renderEmporiumListingCards(rows) {
+      if (!emporiumListingsEl || !emporiumEmptyEl) return;
+      if (!rows.length) {
+        emporiumEmptyEl.style.display = '';
+        emporiumEmptyEl.textContent = 'No active listings for this blook.';
+        emporiumListingsEl.style.display = 'none';
+        emporiumListingsEl.innerHTML = '';
+        return;
+      }
+      emporiumEmptyEl.style.display = 'none';
+      emporiumListingsEl.style.display = '';
+      emporiumListingsEl.innerHTML = '';
+      rows.forEach((row) => {
+        const price = Number(row.price) || 0;
+        const img = String(row.imageUrl || '').trim();
+        const thumb = img && /^https?:\/\//i.test(img) ? mediaThumbUrl(img, 120, 82) : '';
+        const seller = escapeHtml(String(row.sellerName || 'Seller'));
+        const mine = currentUser && row.sellerId === currentUser.uid;
+        const card = document.createElement('div');
+        card.className = 'emporium-listing-card';
+        card.innerHTML = `
+          ${thumb ? `<img class="ep-l-img" src="${thumb}" alt="">` : '<div class="ep-l-img" style="display:flex;align-items:center;justify-content:center;font-size:1.6rem;">🎁</div>'}
+          <div class="ep-l-user">${seller}</div>
+          <div class="ep-l-price"><i class="fas fa-coins"></i> ${escapeHtml(String(price))}</div>
+          ${mine
+            ? `<button type="button" class="ep-cancel" data-act="cancel" data-id="${escapeHtml(row.id)}">Cancel listing</button>`
+            : `<button type="button" class="ep-buy" data-act="buy" data-id="${escapeHtml(row.id)}" ${!currentUser ? 'disabled' : ''}>Buy</button>`}
+        `;
+        const buyBtn = card.querySelector('[data-act="buy"]');
+        if (buyBtn) buyBtn.addEventListener('click', () => buyEmporiumListing(row.id));
+        const cancelBtn = card.querySelector('[data-act="cancel"]');
+        if (cancelBtn) cancelBtn.addEventListener('click', () => cancelEmporiumListing(row.id));
+        emporiumListingsEl.appendChild(card);
+      });
+    }
+
+    async function buyEmporiumListing(listingId) {
+      if (!currentUser) return;
+      try {
+        const refL = doc(db, 'emporiumListings', listingId);
+        await runTransaction(db, async (transaction) => {
+          const ls = await transaction.get(refL);
+          if (!ls.exists()) throw new Error('Listing no longer available');
+          const l = ls.data();
+          if (l.status !== 'active') throw new Error('Listing no longer available');
+          if (l.sellerId === currentUser.uid) throw new Error('You cannot buy your own listing');
+          const price = Number(l.price) || 0;
+          if (price < 1) throw new Error('Invalid price');
+          const buyerRef = doc(db, 'users', currentUser.uid);
+          const sellerRef = doc(db, 'users', l.sellerId);
+          const [bSnap, sSnap] = await Promise.all([transaction.get(buyerRef), transaction.get(sellerRef)]);
+          if (!bSnap.exists()) throw new Error('Buyer profile missing');
+          const coins = Number(bSnap.data().coins) || 0;
+          if (coins < price) throw new Error('Not enough coins');
+          const invRef = doc(collection(db, 'inventory'));
+          transaction.set(invRef, {
+            userId: currentUser.uid,
+            packId: l.packId || null,
+            packName: l.packName || '',
+            itemName: l.itemName || '',
+            rarity: l.rarity || 'common',
+            imageUrl: l.imageUrl || null,
+            starsGained: l.starsGained != null ? l.starsGained : 0,
+            goldenTicketTier: l.goldenTicketTier || null,
+            timestamp: serverTimestamp()
+          });
+          transaction.delete(refL);
+          transaction.update(buyerRef, { coins: increment(-price) });
+          if (sSnap.exists()) {
+            transaction.update(sellerRef, { coins: increment(price) });
+          }
+        });
+        showNotification('Purchase complete! Check your inventory.', 'success');
+        loadUserBalance(currentUser.uid);
+      } catch (e) {
+        showNotification(e.message || 'Could not complete purchase', 'error');
+      }
+    }
+
+    async function cancelEmporiumListing(listingId) {
+      if (!currentUser) return;
+      if (!confirm('Cancel this listing and return the blook to your inventory?')) return;
+      try {
+        const refL = doc(db, 'emporiumListings', listingId);
+        await runTransaction(db, async (transaction) => {
+          const ls = await transaction.get(refL);
+          if (!ls.exists()) throw new Error('Listing not found');
+          const l = ls.data();
+          if (l.sellerId !== currentUser.uid) throw new Error('Not your listing');
+          if (l.status !== 'active') throw new Error('Listing is not active');
+          const invRef = doc(collection(db, 'inventory'));
+          transaction.set(invRef, {
+            userId: currentUser.uid,
+            packId: l.packId || null,
+            packName: l.packName || '',
+            itemName: l.itemName || '',
+            rarity: l.rarity || 'common',
+            imageUrl: l.imageUrl || null,
+            starsGained: l.starsGained != null ? l.starsGained : 0,
+            goldenTicketTier: l.goldenTicketTier || null,
+            timestamp: serverTimestamp()
+          });
+          transaction.delete(refL);
+        });
+        showNotification('Listing cancelled. Blook returned to inventory.', 'success');
+      } catch (e) {
+        showNotification(e.message || 'Could not cancel listing', 'error');
+      }
+    }
+
+    async function loadEmporiumPage() {
+      await refreshInventoryCatalog();
+      populateEmporiumPackSelect();
+    }
+
+    function openEmporiumListModalFromInventory() {
+      if (!currentUser || !invBlookDetailContext) return;
+      const { copies } = invBlookDetailContext;
+      if (!copies || !copies.length || !copies[0].id) {
+        showNotification('Select an unlocked blook first.', 'error');
+        return;
+      }
+      const rep = copies[0];
+      emporiumPendingInvDocId = rep.id;
+      if (emporiumListBlookNameEl) {
+        emporiumListBlookNameEl.textContent = rep.itemName || 'Blook';
+      }
+      if (emporiumListPriceInput) {
+        emporiumListPriceInput.value = String(Math.max(1, invSellPriceForStars(rep.starsGained || 0)));
+      }
+      if (emporiumListModal) emporiumListModal.style.display = 'flex';
+    }
+
+    function closeEmporiumListModal() {
+      if (emporiumListModal) emporiumListModal.style.display = 'none';
+      emporiumPendingInvDocId = null;
+      if (emporiumListPriceInput) emporiumListPriceInput.value = '';
+    }
+
+    async function confirmEmporiumListing() {
+      if (!currentUser || !emporiumPendingInvDocId || !invBlookDetailContext) {
+        closeEmporiumListModal();
+        return;
+      }
+      const raw = emporiumListPriceInput ? emporiumListPriceInput.value : '';
+      const price = Math.floor(Number(raw));
+      if (!Number.isFinite(price) || price < 1 || price > 99999999) {
+        showNotification('Enter a valid price (1–99,999,999 coins).', 'error');
+        return;
+      }
+      const { copies, rep } = invBlookDetailContext;
+      const invId = emporiumPendingInvDocId;
+      const row = copies && copies.find(c => c.id === invId);
+      if (!row) {
+        showNotification('Inventory row missing.', 'error');
+        closeEmporiumListModal();
+        return;
+      }
+      const packDoc = invBlookDetailContext.catalogDef?.packDoc || resolvePackDocForInvDetail(rep || row);
+      const packId = row.packId || packDoc?.id || '';
+      const packName = row.packName || packDoc?.name || '';
+      try {
+        await runTransaction(db, async (transaction) => {
+          const invRef = doc(db, 'inventory', invId);
+          const invSnap = await transaction.get(invRef);
+          if (!invSnap.exists()) throw new Error('That blook is no longer in your inventory');
+          const d = invSnap.data();
+          if (d.userId !== currentUser.uid) throw new Error('Not your inventory item');
+          const listRef = doc(collection(db, 'emporiumListings'));
+          transaction.set(listRef, {
+            sellerId: currentUser.uid,
+            sellerName: emporiumSellerDisplayName(),
+            packId: packId || null,
+            packName: packName || '',
+            itemName: d.itemName || row.itemName || '',
+            rarity: d.rarity || row.rarity || 'common',
+            imageUrl: d.imageUrl || row.imageUrl || null,
+            starsGained: d.starsGained != null ? d.starsGained : (row.starsGained || 0),
+            goldenTicketTier: d.goldenTicketTier || row.goldenTicketTier || null,
+            price,
+            status: 'active',
+            createdAt: serverTimestamp()
+          });
+          transaction.delete(invRef);
+        });
+        showNotification('Listed on the Emporium!', 'success');
+        closeEmporiumListModal();
+        invBlookDetailContext = null;
+        clearInvBlookDetailPanel();
+      } catch (e) {
+        showNotification('Could not list: ' + (e.message || 'error'), 'error');
+      }
     }
 
     function getGoldenTicketCatalogRow() {
@@ -12280,6 +12854,14 @@
     document.getElementById('inv-blook-send-btn')?.addEventListener('click', () => openInvSendFromDetail());
     invPanelSellBtn?.addEventListener('click', () => sellOneInvBlookFromDetail());
     invPanelSendBtn?.addEventListener('click', () => openInvSendFromDetail());
+    invPanelEmporiumBtn?.addEventListener('click', () => openEmporiumListModalFromInventory());
+    emporiumPackSelect?.addEventListener('change', () => {
+      emporiumSelectedPackId = emporiumPackSelect.value || '';
+      emporiumSelectedBlookName = '';
+      renderEmporiumBlookPicks();
+    });
+    emporiumListConfirmBtn?.addEventListener('click', () => confirmEmporiumListing());
+    emporiumListCancelBtn?.addEventListener('click', () => closeEmporiumListModal());
     cancelSendBtn?.addEventListener('click', () => { if (sendCardModal) sendCardModal.style.display = 'none'; currentCard = null; });
     sendCardBtn?.addEventListener('click', async () => {
       if (!currentUser || !currentCard) return;
@@ -12298,6 +12880,7 @@
       if (e.target === packOpeningModal) {
         closePackOpeningModal();
       }
+      if (e.target === emporiumListModal) closeEmporiumListModal();
       if (e.target === sendGiftModal) sendGiftModal.style.display = 'none';
       if (e.target === sendingAnimationModal) sendingAnimationModal.style.display = 'none';
       if (e.target === chanceModal) chanceModal.style.display = 'none';
@@ -12322,6 +12905,7 @@
         sendGiftInventoryModal.style.display = 'none';
         if (sendCardModal) sendCardModal.style.display = 'none';
         closeInvBlookModal();
+        closeEmporiumListModal();
         loginModal.style.display = 'none';
         signupModal.style.display = 'none';
         noticeModal.style.display = 'none';

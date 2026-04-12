@@ -1,0 +1,15 @@
+{
+  "indexes": [
+    {
+      "collectionGroup": "emporiumListings",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "status", "order": "ASCENDING" },
+        { "fieldPath": "packId", "order": "ASCENDING" },
+        { "fieldPath": "itemName", "order": "ASCENDING" },
+        { "fieldPath": "price", "order": "ASCENDING" }
+      ]
+    }
+  ],
+  "fieldOverrides": []
+}
