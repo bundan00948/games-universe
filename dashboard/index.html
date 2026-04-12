@@ -334,6 +334,52 @@
       font-size: 1.1rem;
     }
 
+    .tab-button[data-page="emporium-page"] {
+      position: relative;
+      background: linear-gradient(90deg, rgba(168, 255, 120, 0.12) 0%, rgba(120, 255, 214, 0.08) 100%);
+      border: 1px solid rgba(120, 255, 214, 0.22);
+      margin: 4px 8px;
+      border-radius: 12px;
+      font-weight: 800;
+    }
+    .tab-button[data-page="emporium-page"] i {
+      color: var(--theme-mint);
+      filter: drop-shadow(0 0 8px rgba(168, 255, 120, 0.45));
+    }
+    .tab-button[data-page="emporium-page"]:hover {
+      border-color: rgba(168, 255, 120, 0.55);
+      box-shadow: 0 0 20px rgba(120, 255, 214, 0.15);
+    }
+    .tab-button[data-page="emporium-page"].active {
+      background: linear-gradient(135deg, rgba(168, 255, 120, 0.28) 0%, rgba(120, 255, 214, 0.18) 100%);
+      border-color: var(--theme-mint);
+      color: var(--text-primary);
+      box-shadow:
+        inset 0 0 0 1px rgba(168, 255, 120, 0.35),
+        0 4px 24px rgba(0, 0, 0, 0.35);
+    }
+    .tab-button[data-page="emporium-page"].active i {
+      color: var(--theme-cyan);
+    }
+    .tab-button[data-page="emporium-page"] .emporium-tab-inner {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      width: 100%;
+    }
+    .tab-button[data-page="emporium-page"] .emporium-tab-text {
+      background: linear-gradient(92deg, var(--theme-mint) 0%, var(--theme-cyan) 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      font-weight: 900;
+    }
+    .tab-button[data-page="emporium-page"].active .emporium-tab-text {
+      background: none;
+      -webkit-text-fill-color: var(--text-primary);
+      color: var(--text-primary);
+    }
+
     /* Main Content */
     .main-content {
       flex: 1;
@@ -1932,28 +1978,117 @@
       min-width: 112px;
     }
     .inv-blook-detail-actions .emporium-list-btn {
-      background: linear-gradient(135deg, rgba(168,255,120,0.35), rgba(120,255,214,0.25));
-      color: var(--text-primary);
-      border: 1px solid rgba(120, 255, 214, 0.45);
+      flex: 1 1 100%;
+      order: 3;
+      min-height: 48px;
+      padding: 12px 16px;
+      border-radius: 14px;
+      font-weight: 900;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      font-size: 0.78rem;
+      background: linear-gradient(135deg, #a8ff78 0%, #78ffd6 55%, #5ee8c8 100%);
+      color: var(--text-on-mint);
+      border: none;
+      box-shadow:
+        0 0 0 1px rgba(255, 255, 255, 0.2) inset,
+        0 6px 22px rgba(120, 255, 214, 0.25),
+        0 2px 0 rgba(0, 0, 0, 0.15);
+    }
+    .inv-blook-detail-actions .emporium-list-btn i {
+      margin-right: 8px;
+      font-size: 1rem;
+      vertical-align: -0.05em;
     }
     .inv-blook-detail-actions .emporium-list-btn:hover {
-      filter: brightness(1.08);
+      filter: brightness(1.07);
+      transform: translateY(-1px);
+      box-shadow:
+        0 0 0 1px rgba(255, 255, 255, 0.28) inset,
+        0 10px 28px rgba(120, 255, 214, 0.32);
+    }
+    .inv-blook-detail-actions .emporium-list-btn:active {
+      transform: translateY(0);
     }
 
     /* Emporium — player marketplace */
-    .emporium-page-wrap { max-width: 1100px; margin: 0 auto; }
-    .emporium-toolbar {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 14px;
-      align-items: flex-end;
-      margin: 18px 0 22px;
+    .emporium-page-wrap {
+      max-width: 1120px;
+      margin: 0 auto;
     }
-    .emporium-field { display: flex; flex-direction: column; gap: 6px; min-width: 160px; }
-    .emporium-field label {
-      font-size: 0.72rem; font-weight: 900; text-transform: uppercase; letter-spacing: 0.06em;
+    .emporium-page-inner {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+    .emporium-hero {
+      padding: 22px 24px;
+      border-radius: 20px;
+      border: 1px solid rgba(120, 255, 214, 0.28);
+      background:
+        linear-gradient(145deg, rgba(168, 255, 120, 0.1) 0%, transparent 45%),
+        linear-gradient(210deg, rgba(120, 255, 214, 0.08) 0%, transparent 50%),
+        var(--surface-panel);
+      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.35);
+    }
+    .emporium-hero .page-title {
+      margin-bottom: 8px;
+    }
+    .emporium-hero-sub {
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: var(--text-secondary);
+      line-height: 1.5;
+      max-width: 52ch;
+    }
+    .emporium-panel {
+      padding: 18px 20px 20px;
+      border-radius: 18px;
+      border: 1px solid rgba(120, 255, 214, 0.2);
+      background: rgba(12, 22, 18, 0.65);
+      backdrop-filter: blur(8px);
+    }
+    .emporium-panel-h {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 14px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid rgba(120, 255, 214, 0.15);
+    }
+    .emporium-panel-h i {
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(135deg, rgba(168, 255, 120, 0.25), rgba(120, 255, 214, 0.15));
+      color: var(--theme-mint);
+      font-size: 1rem;
+    }
+    .emporium-panel-h span {
+      font-size: 0.75rem;
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
       color: var(--text-secondary);
     }
+    .emporium-toolbar {
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+    }
+    @media (min-width: 920px) {
+      .emporium-toolbar {
+        flex-direction: row;
+        align-items: stretch;
+      }
+      .emporium-toolbar .emporium-field--packs { flex: 0 0 42%; max-width: 480px; }
+      .emporium-toolbar .emporium-field--blooks { flex: 1; min-width: 0; }
+    }
+    .emporium-field { display: flex; flex-direction: column; gap: 0; min-width: 0; }
+    .emporium-field label { display: none; }
     .emporium-field select,
     .emporium-field input[type="text"] {
       padding: 10px 12px;
@@ -1966,16 +2101,21 @@
     }
     .emporium-pick-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-      gap: 12px;
-      max-height: 220px;
+      gap: 10px;
+      max-height: 240px;
       overflow-y: auto;
-      padding: 4px 2px 8px;
-      margin-bottom: 8px;
+      overflow-x: hidden;
+      padding: 6px 4px 10px;
+      margin: 0;
+      scrollbar-color: var(--theme-cyan) rgba(0, 0, 0, 0.2);
     }
     .emporium-pack-row {
-      grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+      grid-template-columns: repeat(auto-fill, minmax(132px, 1fr));
+    }
+    .emporium-blook-icon-grid {
+      grid-template-columns: repeat(auto-fill, minmax(64px, 1fr));
       max-height: 200px;
+      gap: 8px;
     }
     .visually-hidden {
       position: absolute !important;
@@ -1990,54 +2130,135 @@
       gap: 10px;
       padding: 10px 12px;
       border-radius: 14px;
-      border: 2px solid rgba(120, 255, 214, 0.2);
-      background: var(--surface-panel);
+      border: 2px solid rgba(120, 255, 214, 0.18);
+      background: linear-gradient(165deg, rgba(22, 36, 32, 0.95), rgba(14, 26, 22, 0.9));
       cursor: pointer;
       text-align: left;
-      transition: border-color 0.15s, transform 0.15s;
+      transition: border-color 0.18s, transform 0.18s, box-shadow 0.18s;
     }
-    .emporium-pick-card:hover { border-color: var(--theme-mint); transform: translateY(-1px); }
+    .emporium-pick-card:hover {
+      border-color: rgba(168, 255, 120, 0.55);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+    }
     .emporium-pick-card.selected {
       border-color: var(--theme-mint);
-      box-shadow: 0 0 0 1px rgba(168, 255, 120, 0.35) inset;
+      box-shadow:
+        0 0 0 2px rgba(168, 255, 120, 0.35),
+        0 10px 28px rgba(120, 255, 214, 0.12);
     }
     .emporium-pick-card img {
       width: 44px; height: 44px; object-fit: contain; border-radius: 10px;
-      background: rgba(0,0,0,0.25);
+      background: rgba(0,0,0,0.28);
     }
     .emporium-pick-card .ep-name {
-      font-weight: 900; font-size: 0.85rem; color: var(--text-primary);
+      font-weight: 900; font-size: 0.82rem; color: var(--text-primary);
       line-height: 1.2;
     }
-    .emporium-pick-card .ep-sub { font-size: 0.72rem; color: var(--text-secondary); font-weight: 700; }
+    .emporium-pick-card .ep-sub { font-size: 0.68rem; color: var(--text-secondary); font-weight: 800; text-transform: uppercase; letter-spacing: 0.04em; }
+
+    /* Blook strip: icon-only tiles */
+    .emporium-icon-chip {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      aspect-ratio: 1;
+      min-height: 0;
+      padding: 6px;
+      border-radius: 16px;
+      border: 2px solid rgba(120, 255, 214, 0.2);
+      background: radial-gradient(circle at 30% 25%, rgba(168, 255, 120, 0.12), transparent 55%),
+        linear-gradient(165deg, rgba(20, 34, 30, 0.98), rgba(10, 20, 18, 0.92));
+      cursor: pointer;
+      transition: border-color 0.18s, transform 0.18s, box-shadow 0.18s;
+    }
+    .emporium-icon-chip:hover {
+      border-color: rgba(168, 255, 120, 0.5);
+      transform: scale(1.04);
+    }
+    .emporium-icon-chip.selected {
+      border-color: var(--theme-mint);
+      box-shadow: 0 0 0 2px rgba(168, 255, 120, 0.4), 0 8px 22px rgba(0, 0, 0, 0.35);
+    }
+    .emporium-icon-chip img {
+      width: 100%;
+      height: 100%;
+      max-width: 52px;
+      max-height: 52px;
+      object-fit: contain;
+      border-radius: 8px;
+    }
+    .emporium-icon-chip .ep-fallback {
+      font-size: 1.5rem;
+      line-height: 1;
+      opacity: 0.85;
+    }
+
+    .emporium-listings-wrap {
+      padding: 20px 18px 24px;
+      border-radius: 18px;
+      border: 1px solid rgba(120, 255, 214, 0.2);
+      background: rgba(8, 18, 14, 0.5);
+      min-height: 120px;
+    }
+    .emporium-listings-head {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+    .emporium-listings-head strong {
+      font-family: 'Titan One', 'Nunito', sans-serif;
+      font-weight: 400;
+      font-size: 1.05rem;
+      color: var(--text-primary);
+    }
+    .emporium-listings-head span {
+      font-size: 0.78rem;
+      font-weight: 800;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
     .emporium-listings {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(168px, 1fr));
-      gap: 14px;
+      grid-template-columns: repeat(auto-fill, minmax(176px, 1fr));
+      gap: 16px;
     }
     .emporium-listing-card {
-      border-radius: 16px;
-      border: 2px solid rgba(120, 255, 214, 0.22);
-      background: linear-gradient(165deg, rgba(19,34,30,0.98), rgba(12,24,20,0.95));
-      padding: 14px 12px 12px;
+      border-radius: 18px;
+      border: 1px solid rgba(120, 255, 214, 0.25);
+      background: linear-gradient(168deg, rgba(22, 38, 34, 0.98) 0%, rgba(10, 22, 18, 0.96) 100%);
+      padding: 16px 14px 14px;
       display: flex;
       flex-direction: column;
       align-items: center;
       text-align: center;
-      min-height: 168px;
+      min-height: 188px;
       position: relative;
       overflow: hidden;
+      box-shadow: 0 10px 28px rgba(0, 0, 0, 0.35);
     }
+    .emporium-listing-card::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(ellipse 80% 55% at 50% 0%, rgba(168, 255, 120, 0.08), transparent 65%);
+      pointer-events: none;
+    }
+    .emporium-listing-card > * { position: relative; z-index: 1; }
     .emporium-listing-card .ep-l-img {
-      width: 56px; height: 56px; object-fit: contain;
-      filter: drop-shadow(0 6px 14px rgba(0,0,0,0.45));
-      margin-bottom: 8px;
+      width: 64px; height: 64px; object-fit: contain;
+      filter: drop-shadow(0 8px 16px rgba(0,0,0,0.5));
+      margin-bottom: 10px;
     }
     .emporium-listing-card .ep-l-user {
       font-weight: 900;
-      font-size: 0.82rem;
+      font-size: 0.84rem;
       color: var(--text-primary);
-      line-height: 1.25;
+      line-height: 1.3;
       flex: 1;
       display: flex;
       align-items: center;
@@ -2046,60 +2267,74 @@
       max-width: 100%;
     }
     .emporium-listing-card .ep-l-price {
-      margin-top: 10px;
+      margin-top: 12px;
       font-family: 'Titan One', 'Nunito', sans-serif;
       font-weight: 400;
-      font-size: 1.05rem;
+      font-size: 1.12rem;
       color: var(--theme-mint);
       display: inline-flex;
       align-items: center;
-      gap: 6px;
+      gap: 8px;
     }
-    .emporium-listing-card .ep-l-price .fa-coins { font-size: 0.95rem; opacity: 0.95; }
+    .emporium-listing-card .ep-l-price .fa-coins { font-size: 1rem; opacity: 0.95; color: #ffe066; }
     .emporium-listing-card .ep-buy {
-      margin-top: 10px;
+      margin-top: 12px;
       width: 100%;
-      padding: 8px 10px;
+      padding: 10px 12px;
       border-radius: 12px;
       border: none;
       font-weight: 900;
+      font-size: 0.82rem;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
       cursor: pointer;
-      background: var(--theme-mint);
+      background: linear-gradient(135deg, #a8ff78, #78ffd6);
       color: var(--text-on-mint);
     }
-    .emporium-listing-card .ep-buy:hover { filter: brightness(1.06); }
+    .emporium-listing-card .ep-buy:hover { filter: brightness(1.07); }
     .emporium-listing-card .ep-buy:disabled { opacity: 0.5; cursor: not-allowed; }
     .emporium-listing-card .ep-cancel {
-      margin-top: 6px;
+      margin-top: 8px;
       width: 100%;
-      padding: 6px;
-      font-size: 0.75rem;
+      padding: 8px;
+      font-size: 0.74rem;
       font-weight: 800;
       border: none;
-      background: transparent;
+      border-radius: 8px;
+      background: rgba(0, 0, 0, 0.25);
       color: var(--text-secondary);
       cursor: pointer;
-      text-decoration: underline;
     }
+    .emporium-listing-card .ep-cancel:hover { color: var(--text-primary); background: rgba(0, 0, 0, 0.35); }
     .emporium-empty {
       text-align: center;
-      padding: 36px 16px;
+      padding: 40px 20px;
       color: var(--text-secondary);
       font-weight: 700;
+      font-size: 0.95rem;
+      line-height: 1.5;
+      border-radius: 14px;
+      border: 1px dashed rgba(120, 255, 214, 0.22);
+      background: rgba(0, 0, 0, 0.15);
     }
     .emporium-list-modal .modal-content {
       max-width: 440px;
-      border-radius: 20px;
+      border-radius: 22px;
+      border: 1px solid rgba(120, 255, 214, 0.3);
+      background: linear-gradient(165deg, rgba(22, 36, 32, 0.98), rgba(12, 22, 18, 0.98));
+      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.5);
     }
-    .emporium-list-modal .form-group label { color: var(--text-secondary); }
+    .emporium-list-modal .modal-body { padding-top: 28px; }
+    .emporium-list-modal .form-group label { color: var(--text-secondary); font-weight: 900; text-transform: uppercase; font-size: 0.72rem; letter-spacing: 0.06em; }
     .emporium-list-modal input[type="number"] {
       width: 100%;
-      padding: 12px;
-      border-radius: 10px;
+      padding: 14px 14px;
+      border-radius: 12px;
       border: 1px solid var(--border-ui);
       background: var(--surface-input);
       color: var(--text-primary);
       font-weight: 800;
+      font-size: 1rem;
     }
     .inv-blook-detail-placeholder {
       font-size: 0.9rem;
@@ -5369,8 +5604,8 @@
       <button class="tab-button" data-page="inventory-page">
         <i class="fas fa-box-open"></i> Inventory
       </button>
-      <button class="tab-button" data-page="emporium-page">
-        <i class="fas fa-store"></i> Emporium
+      <button class="tab-button" data-page="emporium-page" aria-label="Emporium marketplace">
+        <span class="emporium-tab-inner"><i class="fas fa-store" aria-hidden="true"></i><span class="emporium-tab-text">Emporium</span></span>
       </button>
       <button class="tab-button" data-page="missions-page">
         <i class="fas fa-tasks"></i> Missions
@@ -5585,7 +5820,7 @@
               <div class="inv-blook-detail-actions" id="inv-panel-actions">
                 <button type="button" class="collect-btn" id="inv-panel-sell-btn">Sell one</button>
                 <button type="button" class="cancel-btn" id="inv-panel-send-btn">Send</button>
-                <button type="button" class="emporium-list-btn" id="inv-panel-emporium-btn">List in Emporium</button>
+                <button type="button" class="emporium-list-btn" id="inv-panel-emporium-btn"><i class="fas fa-store" aria-hidden="true"></i> List in Emporium</button>
               </div>
             </div>
           </aside>
@@ -5595,24 +5830,31 @@
 
     <!-- Emporium: browse listings by pack & blook -->
     <div class="page" id="emporium-page">
-      <div class="page-content emporium-page-wrap">
-        <h2 class="page-title font-titan-header">Emporium</h2>
-        <p class="inv-blooks-sub">Buy blooks other players listed. Pick a pack, then a blook — listings sort cheapest first.</p>
+      <div class="page-content emporium-page-wrap emporium-page-inner">
+        <header class="emporium-hero">
+          <h2 class="page-title font-titan-header">Emporium</h2>
+          <p class="emporium-hero-sub">Trade blooks with other players. Choose a pack, tap a blook icon, then browse listings from lowest price to highest.</p>
+        </header>
         <div class="emporium-toolbar">
-          <div class="emporium-field" style="flex:1;min-width:0;">
-            <label>Packs</label>
-            <div class="emporium-pick-grid emporium-pack-row" id="emporium-pack-picks" role="listbox" aria-label="Packs"></div>
+          <div class="emporium-panel emporium-field emporium-field--packs">
+            <div class="emporium-panel-h"><i class="fas fa-layer-group" aria-hidden="true"></i><span>Step 1 — Pack</span></div>
+            <label class="visually-hidden" for="emporium-pack-select">Pack</label>
+            <div class="emporium-pick-grid emporium-pack-row" id="emporium-pack-picks" role="listbox" aria-label="Choose a pack"></div>
             <select id="emporium-pack-select" class="visually-hidden" aria-hidden="true" tabindex="-1"></select>
           </div>
-          <div class="emporium-field" style="flex:1;min-width:220px;">
-            <label>Blooks</label>
-            <div class="emporium-pick-grid" id="emporium-blook-picks" role="listbox" aria-label="Blooks in pack"></div>
+          <div class="emporium-panel emporium-field emporium-field--blooks">
+            <div class="emporium-panel-h"><i class="fas fa-dragon" aria-hidden="true"></i><span>Step 2 — Blook</span></div>
+            <div class="emporium-pick-grid emporium-blook-icon-grid" id="emporium-blook-picks" role="listbox" aria-label="Choose a blook (icons only)"></div>
           </div>
         </div>
-        <div id="emporium-listings-wrap">
-          <div class="emporium-empty" id="emporium-empty">Select a blook to see listings.</div>
+        <section class="emporium-listings-wrap" id="emporium-listings-wrap">
+          <div class="emporium-listings-head" id="emporium-listings-head" style="display:none;">
+            <strong id="emporium-listings-blook-title">Listings</strong>
+            <span>Cheapest first</span>
+          </div>
+          <div class="emporium-empty" id="emporium-empty">Select a pack and blook to see listings.</div>
           <div class="emporium-listings" id="emporium-listings" style="display:none;"></div>
-        </div>
+        </section>
       </div>
     </div>
 
@@ -7081,6 +7323,8 @@
     const emporiumPackPicks = document.getElementById('emporium-pack-picks');
     const emporiumBlookPicks = document.getElementById('emporium-blook-picks');
     const emporiumListingsEl = document.getElementById('emporium-listings');
+    const emporiumListingsHead = document.getElementById('emporium-listings-head');
+    const emporiumListingsBlookTitle = document.getElementById('emporium-listings-blook-title');
     const emporiumEmptyEl = document.getElementById('emporium-empty');
     const emporiumListModal = document.getElementById('emporium-list-modal');
     const emporiumListBlookNameEl = document.getElementById('emporium-list-blook-name');
@@ -9812,6 +10056,7 @@
         try { emporiumListingsUnsub(); } catch (_) {}
         emporiumListingsUnsub = null;
       }
+      if (emporiumListingsHead) emporiumListingsHead.style.display = 'none';
     }
 
     function emporiumSellerDisplayName() {
@@ -9847,7 +10092,7 @@
           const imgHtml = art
             ? `<img src="${escapeHtml(art)}" alt="">`
             : `<span style="width:44px;height:44px;border-radius:10px;background:rgba(0,0,0,0.28);display:flex;align-items:center;justify-content:center;"><i class="fas fa-cube" style="color:var(--theme-cyan);"></i></span>`;
-          btn.innerHTML = `${imgHtml}<div><div class="ep-name">${escapeHtml(p.name || p.id)}</div><div class="ep-sub">Pack</div></div>`;
+          btn.innerHTML = `${imgHtml}<div><div class="ep-name">${escapeHtml(p.name || p.id)}</div></div>`;
           btn.addEventListener('click', () => {
             emporiumSelectedPackId = p.id;
             emporiumSelectedBlookName = '';
@@ -9887,6 +10132,7 @@
         emporiumSelectedBlookName = '';
         cleanupEmporiumListingsListener();
         if (emporiumListingsEl) emporiumListingsEl.style.display = 'none';
+        if (emporiumListingsHead) emporiumListingsHead.style.display = 'none';
         if (emporiumEmptyEl) {
           emporiumEmptyEl.style.display = '';
           emporiumEmptyEl.textContent = 'No blooks in this pack yet.';
@@ -9898,18 +10144,21 @@
         const nm = String(it.name || '').trim();
         const card = document.createElement('button');
         card.type = 'button';
-        card.className = 'emporium-pick-card' + (nm === emporiumSelectedBlookName ? ' selected' : '');
+        card.className = 'emporium-icon-chip' + (nm === emporiumSelectedBlookName ? ' selected' : '');
         card.setAttribute('role', 'option');
+        card.setAttribute('title', nm);
+        card.setAttribute('aria-label', nm);
         card.dataset.blookName = nm;
         const art = String(it.imageUrl || '').trim();
-        const thumb = art && /^https?:\/\//i.test(art) ? mediaThumbUrl(art, 96, 82) : art;
-        const imgHtml = thumb
-          ? `<img src="${escapeHtml(thumb)}" alt="">`
-          : `<span style="width:44px;height:44px;border-radius:10px;background:rgba(0,0,0,0.28);display:flex;align-items:center;justify-content:center;font-size:1.25rem;">🎁</span>`;
-        card.innerHTML = `${imgHtml}<div><div class="ep-name">${escapeHtml(nm)}</div><div class="ep-sub">${escapeHtml(String(it.rarity || '').toUpperCase())}</div></div>`;
+        const thumb = art && /^https?:\/\//i.test(art) ? mediaThumbUrl(art, 112, 82) : art;
+        if (thumb) {
+          card.innerHTML = `<img src="${escapeHtml(thumb)}" alt="">`;
+        } else {
+          card.innerHTML = `<span class="ep-fallback" aria-hidden="true">🎁</span>`;
+        }
         card.addEventListener('click', () => {
           emporiumSelectedBlookName = nm;
-          emporiumBlookPicks.querySelectorAll('.emporium-pick-card').forEach(el => {
+          emporiumBlookPicks.querySelectorAll('.emporium-icon-chip').forEach(el => {
             el.classList.toggle('selected', el.dataset.blookName === nm);
           });
           subscribeEmporiumListingsForSelection();
@@ -9919,7 +10168,7 @@
       if (!emporiumSelectedBlookName || !items.some(it => String(it.name || '').trim() === emporiumSelectedBlookName)) {
         emporiumSelectedBlookName = String(items[0].name || '').trim();
       }
-      emporiumBlookPicks.querySelectorAll('.emporium-pick-card').forEach(el => {
+      emporiumBlookPicks.querySelectorAll('.emporium-icon-chip').forEach(el => {
         el.classList.toggle('selected', el.dataset.blookName === emporiumSelectedBlookName);
       });
       subscribeEmporiumListingsForSelection();
@@ -9940,6 +10189,7 @@
         renderEmporiumListingCards(rows);
       }, (err) => {
         console.error('Emporium listings error', err);
+        if (emporiumListingsHead) emporiumListingsHead.style.display = 'none';
         emporiumEmptyEl.style.display = '';
         emporiumEmptyEl.textContent = 'Could not load listings (check Firestore index for emporiumListings).';
         emporiumListingsEl.style.display = 'none';
@@ -9948,9 +10198,13 @@
 
     function renderEmporiumListingCards(rows) {
       if (!emporiumListingsEl || !emporiumEmptyEl) return;
+      if (emporiumListingsHead && emporiumListingsBlookTitle && emporiumSelectedBlookName) {
+        emporiumListingsHead.style.display = 'flex';
+        emporiumListingsBlookTitle.textContent = emporiumSelectedBlookName;
+      }
       if (!rows.length) {
         emporiumEmptyEl.style.display = '';
-        emporiumEmptyEl.textContent = 'No active listings for this blook.';
+        emporiumEmptyEl.textContent = 'No active listings for this blook yet.';
         emporiumListingsEl.style.display = 'none';
         emporiumListingsEl.innerHTML = '';
         return;
