@@ -198,6 +198,9 @@
       .pack-opening-modal-unbox .modal-background#opening-modal-bg { animation: none !important; }
       .pack-unbox-body-lively::before { animation: none !important; opacity: 0.5 !important; }
       .pack-unbox-body-lively .pack-bg-fx .pack-bg-aurora { animation: none !important; }
+      .pack-unbox-body-lively .pack-bg-fx .pack-bg-mesh,
+      .pack-unbox-body-lively .pack-bg-fx .pack-bg-rays { animation: none !important; }
+      .pack-unbox-stage:not(.torn) .pack-unbox-stack { animation: none !important; }
       .pack-confetti-piece { animation: none !important; opacity: 0.6 !important; }
     }
     .page-content, .main-page {
@@ -2599,7 +2602,7 @@
     }
     @keyframes packRipOverlayFlash {
       0% { opacity: 0; }
-      35% { opacity: 1; background: radial-gradient(ellipse 85% 65% at 50% 45%, rgba(255,255,255,0.14), transparent 62%); }
+      35% { opacity: 1; background: radial-gradient(ellipse 85% 65% at 50% 45%, rgba(255, 255, 160, 0.12), rgba(238, 102, 255, 0.08), transparent 62%); }
       100% { opacity: 0; background: transparent; }
     }
     .pack-rip-overlay.pack-bg-rip-flash-dark {
@@ -2628,7 +2631,7 @@
     }
     .modal-content.pack-opening-modal-unbox .pack-bg-fx .pack-bg-mesh,
     .modal-content.pack-opening-modal-unbox .pack-bg-fx .pack-bg-rays {
-      display: none;
+      display: block;
     }
     .pack-bg-fx .pack-bg-aurora {
       position: absolute;
@@ -2765,18 +2768,19 @@
       animation: packRevealCardIn 0.82s cubic-bezier(0.18, 1.2, 0.28, 1) both;
     }
     @keyframes packRevealCardIn {
-      0% { opacity: 0; transform: scale(0.88) translateY(28px) rotate(-2deg); filter: blur(6px); box-shadow: 0 0 0 rgba(255,255,160,0); }
-      40% { opacity: 1; transform: scale(1.04) translateY(-6px) rotate(0.6deg); filter: blur(0); box-shadow: 0 0 36px rgba(255,255,160,0.28); }
-      70% { transform: scale(0.98) translateY(3px) rotate(-0.3deg); box-shadow: 0 12px 36px rgba(0,0,0,0.45); }
+      0% { opacity: 0; transform: scale(0.82) translateY(36px) rotate(-4deg); filter: blur(8px); box-shadow: 0 0 0 rgba(255,255,160,0); }
+      28% { opacity: 1; transform: scale(1.08) translateY(-10px) rotate(1.2deg); filter: blur(0); box-shadow: 0 0 48px rgba(255,255,160,0.35), 0 0 80px rgba(238,102,255,0.2); }
+      55% { transform: scale(0.96) translateY(6px) rotate(-0.5deg); box-shadow: 0 18px 40px rgba(0,0,0,0.5); }
       100% { opacity: 1; transform: scale(1) translateY(0) rotate(0); filter: blur(0); box-shadow: 0 14px 44px rgba(0,0,0,0.5); }
     }
     .pack-reveal-card {
-      width: min(92vw, 400px);
-      min-height: min(72vh, 520px);
+      width: min(92vw, 400px, 88vmin, 92vh);
+      aspect-ratio: 1;
+      height: auto;
       margin: 0 auto;
       border-radius: 14px;
       border: 2px solid rgba(255,255,160,0.35);
-      padding: 18px 16px 14px;
+      padding: 14px 12px 12px;
       display: flex;
       flex-direction: column;
       align-items: stretch;
@@ -2786,6 +2790,7 @@
       background-size: cover;
       background-position: center;
       background-repeat: no-repeat;
+      overflow: hidden;
     }
     .pack-reveal-card-inner {
       flex: 1;
@@ -2844,11 +2849,11 @@
       align-items: center;
       justify-content: center;
       width: 100%;
-      min-height: 200px;
+      min-height: 0;
     }
     .pack-reveal-blook-wrap img {
-      max-width: 72%;
-      max-height: min(28vh, 200px);
+      max-width: 78%;
+      max-height: min(38vmin, 42%);
       object-fit: contain;
       filter: drop-shadow(0 8px 24px rgba(0,0,0,0.5));
     }
@@ -2883,6 +2888,22 @@
       cursor: pointer;
       background: transparent;
       -webkit-tap-highlight-color: transparent;
+      appearance: none;
+      -webkit-appearance: none;
+      border: none;
+      margin: 0;
+      padding: 0;
+      color: transparent;
+      box-shadow: none;
+      border-radius: 0;
+      outline: none;
+      user-select: none;
+    }
+    .pack-unbox-click-layer:active,
+    .pack-unbox-click-layer:focus {
+      background: transparent;
+      box-shadow: none;
+      outline: none;
     }
     .pack-unbox-click-layer:focus-visible {
       outline: 2px solid var(--neon-green);
@@ -2898,6 +2919,19 @@
       padding: 0;
       margin: 0;
       -webkit-tap-highlight-color: transparent;
+      appearance: none;
+      -webkit-appearance: none;
+      color: transparent;
+      box-shadow: none;
+      border-radius: 0;
+      outline: none;
+      user-select: none;
+    }
+    .pack-unbox-dismiss-layer:active,
+    .pack-unbox-dismiss-layer:focus {
+      background: transparent;
+      box-shadow: none;
+      outline: none;
     }
     .pack-unbox-dismiss-layer:focus-visible {
       outline: 2px solid var(--neon-green);
@@ -3074,15 +3108,17 @@
       z-index: 2;
     }
     .pack-unbox-stage:not(.torn) .pack-unbox-stack {
-      animation: packWholeNudge 1.8s ease-in-out infinite;
-      filter: drop-shadow(0 12px 28px rgba(0,0,0,0.5));
+      animation: packWholeNudge 2.1s ease-in-out infinite;
+      filter: drop-shadow(0 14px 32px rgba(0,0,0,0.55)) drop-shadow(0 0 28px rgba(255,255,160,0.12));
+      will-change: transform;
     }
     @keyframes packWholeNudge {
       0%, 100% { transform: translateY(0) scale(1) rotate(0deg); }
-      15% { transform: translateY(-10px) scale(1.035) rotate(-1.4deg); }
-      40% { transform: translateY(-5px) scale(1.02) rotate(0.6deg); }
-      65% { transform: translateY(-9px) scale(1.028) rotate(1.1deg); }
-      85% { transform: translateY(-3px) scale(1.01) rotate(-0.4deg); }
+      12% { transform: translateY(-12px) scale(1.042) rotate(-2deg); }
+      28% { transform: translateY(-6px) scale(1.024) rotate(1deg); }
+      48% { transform: translateY(-11px) scale(1.036) rotate(1.6deg); }
+      72% { transform: translateY(-4px) scale(1.014) rotate(-0.8deg); }
+      88% { transform: translateY(-8px) scale(1.028) rotate(0.5deg); }
     }
     .pack-unbox-stage.torn {
       animation: none;
@@ -3102,23 +3138,24 @@
     }
     @keyframes packCoverFallAway {
       0% { transform: translateY(0) rotate(0) scale(1); opacity: 1; filter: brightness(1); }
-      18% { transform: translateY(-4%) rotate(1.5deg) scale(1.03); opacity: 1; }
-      38% { transform: translateY(12%) rotate(-3deg) scale(1.01); opacity: 1; }
+      14% { transform: translateY(-6%) rotate(2deg) scale(1.04); opacity: 1; filter: brightness(1.05); }
+      32% { transform: translateY(18%) rotate(-5deg) scale(0.98); opacity: 1; }
       100% {
-        transform: translateY(145%) rotate(18deg) scale(0.82);
+        transform: translateY(155%) rotate(22deg) scale(0.76);
         opacity: 0;
-        filter: brightness(0.35);
+        filter: brightness(0.28);
       }
     }
     @keyframes packRipTopFlap {
-      0% { transform: translate(0, 0) rotate(0) scale(1); opacity: 1; }
-      8% { transform: translate(0.3%, -1%) rotate(1deg) scale(1.04); opacity: 1; }
-      22% { transform: translate(-1.5%, -12%) rotate(-6deg) scale(1.02); opacity: 1; }
-      42% { transform: translate(-6%, -42%) rotate(-14deg) scale(0.98); opacity: 1; }
-      68% { transform: translate(-14%, -88%) rotate(-24deg) scale(0.88); opacity: 0.95; }
+      0% { transform: translate(0, 0) rotate(0) scale(1); opacity: 1; filter: brightness(1); }
+      6% { transform: translate(0.4%, -2%) rotate(1.2deg) scale(1.05); opacity: 1; }
+      18% { transform: translate(-2%, -16%) rotate(-8deg) scale(1.02); opacity: 1; }
+      36% { transform: translate(-8%, -48%) rotate(-16deg) scale(0.98); opacity: 1; }
+      58% { transform: translate(-16%, -92%) rotate(-26deg) scale(0.9); opacity: 0.96; }
       100% {
-        transform: translate(-26%, -138%) rotate(-36deg) scale(0.72);
+        transform: translate(-30%, -148%) rotate(-40deg) scale(0.68);
         opacity: 0;
+        filter: brightness(0.85);
       }
     }
     .pack-unbox-reveal {
@@ -4762,19 +4799,20 @@
 
     /* Pack unboxing animation */
     .gift-animation.pack-unbox-anim {
-      animation: packUnboxShake 0.85s ease-in-out, packUnboxPop 0.6s ease 0.5s forwards;
+      animation: packUnboxShake 0.95s cubic-bezier(0.36, 0.08, 0.22, 1), packUnboxPop 0.72s cubic-bezier(0.2, 0.9, 0.25, 1) 0.42s forwards;
     }
     @keyframes packUnboxShake {
       0%, 100% { transform: translateX(0) rotate(0); }
-      20% { transform: translateX(-6px) rotate(-3deg); }
-      40% { transform: translateX(6px) rotate(3deg); }
-      60% { transform: translateX(-4px) rotate(-2deg); }
-      80% { transform: translateX(4px) rotate(2deg); }
+      15% { transform: translateX(-9px) rotate(-4deg); }
+      32% { transform: translateX(10px) rotate(4deg); }
+      50% { transform: translateX(-7px) rotate(-2.5deg); }
+      68% { transform: translateX(6px) rotate(2.5deg); }
+      85% { transform: translateX(-3px) rotate(-1deg); }
     }
     @keyframes packUnboxPop {
-      0% { transform: scale(0.92); opacity: 0.85; }
-      60% { transform: scale(1.08); opacity: 1; }
-      100% { transform: scale(1); opacity: 1; }
+      0% { transform: scale(0.88); opacity: 0.75; filter: brightness(0.9); }
+      55% { transform: scale(1.1); opacity: 1; filter: brightness(1.08); }
+      100% { transform: scale(1); opacity: 1; filter: brightness(1); }
     }
 
     /* Inventory: single card + rarity-colored count */
@@ -9045,9 +9083,9 @@
             }
             packRipOverlay.classList.remove('pack-bg-rip-flash', 'pack-bg-rip-flash-dark');
             void packRipOverlay.offsetWidth;
-            packRipOverlay.classList.add('pack-bg-rip-flash-dark');
+            packRipOverlay.classList.add('pack-bg-rip-flash');
             packRipFlashTimer = setTimeout(() => {
-              packRipOverlay?.classList.remove('pack-bg-rip-flash-dark');
+              packRipOverlay?.classList.remove('pack-bg-rip-flash');
               packRipFlashTimer = null;
             }, 700);
           });
