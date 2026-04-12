@@ -2595,7 +2595,7 @@
       z-index: 2;
       pointer-events: none;
       background: transparent;
-      mix-blend-mode: screen;
+      /* Normal compositing: `screen` + opacity animation caused dark flashes when restarting the rip flash */
     }
     .pack-rip-overlay.pack-bg-rip-flash {
       animation: packRipOverlayFlash 0.65s ease-out 1;
@@ -8084,15 +8084,18 @@
       packOpeningBusy = true;
       try {
         const userDoc = await getDoc(doc(db, "users", currentUser.uid));
-        if (!userDoc.exists()) { showNotification("User data not found", "error"); return; }
+        if (!userDoc.exists()) { showNotification("User data not found", "error"); packOpeningBusy = false; return; }
         const userData = userDoc.data();
-        if (userData.coins < pack.price) { showNotification("Not enough coins!", "error"); return; }
+        if (userData.coins < pack.price) { showNotification("Not enough coins!", "error"); packOpeningBusy = false; return; }
         await updateDoc(doc(db, "users", currentUser.uid), { coins: userData.coins - pack.price });
         updateMissionProgress('spending', pack.price);
         loadUserBalance(currentUser.uid);
         await openPack(pack, currentUser.uid);
-      } catch(e) { showNotification("Error purchasing pack: " + e.message, "error"); }
-      finally { packOpeningBusy = false; }
+      } catch (e) {
+        showNotification("Error purchasing pack: " + e.message, "error");
+        packOpeningBusy = false;
+      }
+      /* packOpeningBusy stays true until resetPackOpeningModalLayout() when the pack modal closes */
     }
 
     // Get item based on weighted chance (+ optional Golden Ticket pool)
@@ -8815,6 +8818,12 @@
       openingModalBg.style.backgroundBlendMode = '';
     }
 
+    function closePackOpeningModal() {
+      if (packOpeningModal) packOpeningModal.style.display = 'none';
+      resetPackOpeningModalLayout();
+      packOpeningBusy = false;
+    }
+
     function applyPackUnboxBackdropVars(innerHex, outerHex, rarity) {
       const root = packOpeningModalInner;
       if (!root) return;
@@ -9008,8 +9017,7 @@
             e.preventDefault();
             e.stopPropagation();
             if (!currentUser || !currentGiftCard) {
-              packOpeningModal.style.display = 'none';
-              resetPackOpeningModalLayout();
+              closePackOpeningModal();
               return;
             }
             try {
@@ -9044,11 +9052,11 @@
                   userId: currentUser.uid
                 });
               }
-              packOpeningModal.style.display = 'none';
-              resetPackOpeningModalLayout();
+              closePackOpeningModal();
               showNotification(`You received: ${currentGiftCard.name}!`, 'success');
             } catch (err) {
               showNotification('Error collecting item: ' + (err.message || 'error'), 'error');
+              closePackOpeningModal();
             }
           };
           packUnboxDismissLayer.addEventListener('click', packUnboxDismissHandler);
@@ -12277,8 +12285,7 @@
     window.addEventListener('click', (e) => {
       if (e.target === confirmModal) confirmModal.style.display = 'none';
       if (e.target === packOpeningModal) {
-        packOpeningModal.style.display = 'none';
-        resetPackOpeningModalLayout();
+        closePackOpeningModal();
       }
       if (e.target === sendGiftModal) sendGiftModal.style.display = 'none';
       if (e.target === sendingAnimationModal) sendingAnimationModal.style.display = 'none';
@@ -12296,8 +12303,7 @@
     document.addEventListener('keydown', (e) => {
       if (e.key === 'Escape') {
         confirmModal.style.display = 'none';
-        packOpeningModal.style.display = 'none';
-        resetPackOpeningModalLayout();
+        closePackOpeningModal();
         sendGiftModal.style.display = 'none';
         sendingAnimationModal.style.display = 'none';
         chanceModal.style.display = 'none';
