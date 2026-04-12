@@ -18,8 +18,8 @@
       --purple: #78ffd6;
       --text: #e8fff4;
       --muted: #b8e8d8;
-      /* Curved seam: left column overlaps right so only the left needs a clip */
-      --seam-overlap: min(15vw, 195px);
+      /* Slight lean from plumb: seam matches between solid left and animated right (~2.7° at typical widths) */
+      --split-skew: min(2.8vw, 40px);
       --blook-pattern: url("https://ac.blooket.com/@codeblooket/blooket-frontend-components/v0.2.45/assets/BlookCheckers-e975c505.png");
     }
     * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -35,7 +35,6 @@
       position: relative;
       min-height: 100vh;
       display: grid;
-      /* Equal columns keep the hero image centered in the right half (viewport) */
       grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
       background: var(--right-bg);
       overflow-x: clip;
@@ -49,10 +48,11 @@
       min-height: 100vh;
       min-width: 0;
       background: var(--left-bg);
-      width: calc(100% + var(--seam-overlap));
-      margin-right: calc(-1 * var(--seam-overlap));
-      /* Curved seam: shifted a bit left vs prior; top/bottom inset differ for a slightly stronger lean */
-      clip-path: path('M 0 0 L 95% 0 C 122% 12% 122% 88% 67% 100% L 0 100% Z');
+      /* Widen slightly so angled edge meets the right panel seam (no gap) */
+      width: calc(100% + var(--split-skew));
+      margin-right: calc(-1 * var(--split-skew));
+      /* Near-vertical seam, tilted a little counterclockwise from plumb */
+      clip-path: polygon(0 0, 100% 0, calc(100% - var(--split-skew)) 100%, 0 100%);
     }
     @media (max-width: 900px) {
       .landing {
@@ -65,8 +65,7 @@
         background: var(--left-bg);
       }
       .landing-right {
-        width: 100%;
-        margin-left: 0;
+        clip-path: none;
         min-height: min(52vh, 520px);
         order: -1;
       }
@@ -159,9 +158,7 @@
       overflow: hidden;
       isolation: isolate;
       background: var(--right-bg);
-      /* Pull under the left panel so the left’s curved clip reveals this surface */
-      width: calc(100% + var(--seam-overlap));
-      margin-left: calc(-1 * var(--seam-overlap));
+      clip-path: polygon(var(--split-skew) 0, 100% 0, 100% 100%, 0 100%);
     }
     .landing-right::before {
       content: "";
@@ -197,12 +194,6 @@
       align-items: center;
       justify-content: center;
       padding: clamp(20px, 4vw, 40px);
-    }
-    @media (min-width: 901px) {
-      .blook-stage {
-        /* Undo flex shift from seam overlap (wider column + negative margin) — match pre-overlap centering */
-        margin-left: calc(var(--seam-overlap) / 2);
-      }
     }
     .blook-stage img {
       max-width: 100%;
